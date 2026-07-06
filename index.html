@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Thailand Trip Planner v1.2.1</title>
+<title>Thailand Trip Planner v1.2.2</title>
 <style>
 :root {
   --sunny: #E67E22; --rainy: #4A90B8; --bangkok: #E67E22; --phuket: #2196A8;
@@ -282,7 +282,7 @@ body {
 <!-- Hero -->
 <div class="hero">
   <h1>Thailand Trip Planner</h1>
-  <p class="subtitle">抽卡模式 · 看天气出牌 · 半玩半躺 <span style="font-size:0.7rem;opacity:0.6;margin-left:6px;border:1px solid rgba(255,255,255,0.3);border-radius:10px;padding:1px 8px">v1.2.1</span></p>
+  <p class="subtitle">抽卡模式 · 看天气出牌 · 半玩半躺 <span style="font-size:0.7rem;opacity:0.6;margin-left:6px;border:1px solid rgba(255,255,255,0.3);border-radius:10px;padding:1px 8px">v1.2.2</span></p>
   <div class="dates">
     <span class="date-tag">8.7 晚 成都天府</span>
     <span class="date-tag">曼谷 8.8 - 8.11</span>
@@ -345,7 +345,7 @@ body {
 
 <!-- Footer -->
 <div class="footer">
-  <p>Thailand Trip Planner v1.2.1 · 手机优先 · <span style="opacity:0.6">yuzhan777.github.io/thailand-trip</span></p>
+  <p>Thailand Trip Planner v1.2.2 · 手机优先 · <span style="opacity:0.6">yuzhan777.github.io/thailand-trip</span></p>
 </div>
 
 <script>
@@ -1442,7 +1442,7 @@ function addExpenseEntry() {
 
 // ==================== INIT ====================
 async function init() {
-  if (!localStorage.getItem("th-v1.2.1-clean")) { localStorage.removeItem("thailand-trip-v2"); localStorage.setItem("th-v1.2.1-clean", "1"); }
+  if (!localStorage.getItem("th-v1.2.2-clean")) { localStorage.removeItem("thailand-trip-v2"); localStorage.setItem("th-v1.2.2-clean", "1"); }
   // Hydrate state: localStorage instant → cloud overwrites if newer
   loadLocal();
   const fromCloud = await loadFromCloud();

@@ -1311,23 +1311,23 @@ const PAYERS = ['', '冯波', '欧宝', '大高', '张姐'];
 const CATEGORIES = ['机票', '住宿', '餐饮', '活动', '交通', '其他'];
 
 let expenseItems = [
-	  { id:'e1', cat:'机票', item:'去程 · 成都→曼谷', perPerson:800, total:null, payer:'', note:'8.7 22:00' },
-	  { id:'e2', cat:'机票', item:'返程 · 普吉→成都', perPerson:1500, total:null, payer:'', note:'8.16 14:00' },
-	  { id:'e3', cat:'住宿', item:'曼谷 4晚 · 两间房', perPerson:null, total:3000, payer:'', note:'Asok BTS附近' },
-	  { id:'e4', cat:'住宿', item:'普吉 5晚 · 两间房', perPerson:null, total:4000, payer:'', note:'卡伦海滩' },
-	  { id:'e5', cat:'餐饮', item:'Day 1 晚餐 · 唐人街', perPerson:80, total:null, payer:'', note:'8.8' },
-	  { id:'e6', cat:'餐饮', item:'Day 2 晚餐 · 素坤逸', perPerson:60, total:null, payer:'', note:'8.9' },
-	  { id:'e7', cat:'餐饮', item:'Day 3 晚餐', perPerson:80, total:null, payer:'', note:'8.10' },
-	  { id:'e8', cat:'餐饮', item:'Day 4 晚餐 · 普吉第一顿', perPerson:120, total:null, payer:'', note:'8.11' },
-	  { id:'e9', cat:'餐饮', item:'Day 5 晚餐', perPerson:100, total:null, payer:'', note:'8.12' },
-	  { id:'e10', cat:'餐饮', item:'Day 6 Fine Dining · 悬崖餐厅', perPerson:300, total:null, payer:'', note:'8.13' },
-	  { id:'e11', cat:'餐饮', item:'Day 7 晚餐', perPerson:100, total:null, payer:'', note:'8.14' },
-	  { id:'e12', cat:'餐饮', item:'Day 8 晚餐 · 最后一晚', perPerson:150, total:null, payer:'', note:'8.15' },
-	  { id:'e13', cat:'活动', item:'跳岛出海一日游', perPerson:400, total:null, payer:'', note:'攀牙湾' },
-	  { id:'e14', cat:'活动', item:'芭提雅包车+射击', perPerson:null, total:1400, payer:'', note:'4人分摊 · 人均¥350' },
-	  { id:'e15', cat:'活动', item:'其他活动/门票', perPerson:500, total:null, payer:'', note:'大象保护/按摩等' },
-	  { id:'e16', cat:'交通', item:'市内交通 · 9天', perPerson:300, total:null, payer:'', note:'BTS/打车/Grab' },
-	  { id:'e17', cat:'其他', item:'购物/伴手礼/杂项', perPerson:500, total:null, payer:'', note:'' },
+	  { id:'e1', cat:'机票', item:'去程 · 成都→曼谷', perPerson:null, total:null, payer:'', note:'8.7 22:00' },
+	  { id:'e2', cat:'机票', item:'返程 · 普吉→成都', perPerson:null, total:null, payer:'', note:'8.16 14:00' },
+	  { id:'e3', cat:'住宿', item:'曼谷 4晚 · 两间房', perPerson:null, total:null, payer:'', note:'Asok BTS附近' },
+	  { id:'e4', cat:'住宿', item:'普吉 5晚 · 两间房', perPerson:null, total:null, payer:'', note:'卡伦海滩' },
+	  { id:'e5', cat:'餐饮', item:'Day 1 晚餐 · 唐人街', perPerson:null, total:null, payer:'', note:'8.8' },
+	  { id:'e6', cat:'餐饮', item:'Day 2 晚餐 · 素坤逸', perPerson:null, total:null, payer:'', note:'8.9' },
+	  { id:'e7', cat:'餐饮', item:'Day 3 晚餐', perPerson:null, total:null, payer:'', note:'8.10' },
+	  { id:'e8', cat:'餐饮', item:'Day 4 晚餐 · 普吉第一顿', perPerson:null, total:null, payer:'', note:'8.11' },
+	  { id:'e9', cat:'餐饮', item:'Day 5 晚餐', perPerson:null, total:null, payer:'', note:'8.12' },
+	  { id:'e10', cat:'餐饮', item:'Day 6 Fine Dining · 悬崖餐厅', perPerson:null, total:null, payer:'', note:'8.13' },
+	  { id:'e11', cat:'餐饮', item:'Day 7 晚餐', perPerson:null, total:null, payer:'', note:'8.14' },
+	  { id:'e12', cat:'餐饮', item:'Day 8 晚餐 · 最后一晚', perPerson:null, total:null, payer:'', note:'8.15' },
+	  { id:'e13', cat:'活动', item:'跳岛出海一日游', perPerson:null, total:null, payer:'', note:'攀牙湾' },
+	  { id:'e14', cat:'活动', item:'芭提雅包车+射击', perPerson:null, total:null, payer:'', note:'4人分摊 · 人均¥350' },
+	  { id:'e15', cat:'活动', item:'其他活动/门票', perPerson:null, total:null, payer:'', note:'大象保护/按摩等' },
+	  { id:'e16', cat:'交通', item:'市内交通 · 9天', perPerson:null, total:null, payer:'', note:'BTS/打车/Grab' },
+	  { id:'e17', cat:'其他', item:'购物/伴手礼/杂项', perPerson:null, total:null, payer:'', note:'' },
 	];
 
 function renderExpenseView() {
@@ -1352,8 +1352,8 @@ function renderExpenseView() {
     html += `<tr data-exp-id="${r.id}">
       <td style="font-size:0.72rem">${r.cat}</td>
       <td style="min-width:140px"><input value="${r.item}" onchange="updateExpItem('${r.id}','item',this.value)" style="width:100%"></td>
-      <td><input type="number" value="${r.perPerson!=null?r.perPerson:''}" placeholder="人均" onchange="onPerPersonChange('${r.id}',this.value)" style="width:80px"></td>
-      <td><input type="number" value="${r.total!=null?r.total:''}" placeholder="总体" onchange="onTotalChange('${r.id}',this.value)" style="width:80px"></td>
+      <td><input type="number" value="${r.perPerson!=null?r.perPerson:(r.total!=null?Math.round(r.total/4):'')}" placeholder="人均" onchange="onPerPersonChange('${r.id}',this.value)" style="width:80px"></td>
+      <td><input type="number" value="${r.total!=null?r.total:(r.perPerson!=null?r.perPerson*4:'')}" placeholder="总体" onchange="onTotalChange('${r.id}',this.value)" style="width:80px"></td>
       <td><select onchange="updateExpItem('${r.id}','payer',this.value)">${PAYERS.map(p => `<option value="${p}" ${r.payer===p?'selected':''}>${p||'—'}</option>`).join('')}</select></td>
       <td style="min-width:100px"><input value="${r.note||''}" onchange="updateExpItem('${r.id}','note',this.value)" style="width:100%"></td>
       <td><button class="exp-del" onclick="deleteExpItem('${r.id}')">✕</button></td>

@@ -1465,13 +1465,12 @@ async function init() {
   const fromCloud = await loadFromCloud();
   if (!fromCloud) { loadLocal(); scheduleSync(); /* push local to cloud */ }
   setupRealtime();
-  renderPlanView();
+  showView('plan');
   bindTouchHandlers();
   document.addEventListener('dragover', e => e.preventDefault());
   document.addEventListener('drop', e => e.preventDefault());
 }
 
-showView('plan');
 init();
 </script>
 </body>

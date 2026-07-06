@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Thailand Trip Planner v1.1</title>
+<title>Thailand Trip Planner v1.2</title>
 <style>
 :root {
   --sunny: #E67E22; --rainy: #4A90B8; --bangkok: #E67E22; --phuket: #2196A8;
@@ -130,12 +130,12 @@ body {
 
 /* Card Picker Popover */
 .picker-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 998;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000;
   display: flex; align-items: flex-end; justify-content: center;
 }
 .picker-panel {
   background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 500px;
-  max-height: 70vh; overflow-y: auto; padding: 16px; animation: slideUp 0.2s ease;
+  max-height: 65vh; overflow-y: auto; padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px)); animation: slideUp 0.2s ease;
 }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -197,6 +197,13 @@ body {
 .tl-content .tl-act { font-weight: 500; }
 .tl-content .tl-loc { font-size: 0.74rem; color: var(--text-light); }
 .tl-transport { font-size: 0.7rem; padding: 2px 8px; border-radius: 8px; background: #f0f0f0; white-space: nowrap; margin-top: 2px; display: inline-block; }
+	.tl-entry.is-transport { padding: 3px 0; opacity: 0.6; }
+	.tl-entry.is-transport .tl-time { font-size: 0.7rem; }
+	.tl-entry.is-transport .tl-dot { width: 7px; height: 7px; min-width: 7px; margin-top: 5px; }
+	.tl-entry.is-transport .tl-content input { font-size: 0.7rem; }
+	.tl-entry.is-transport .tl-transport { font-size: 0.64rem; padding: 1px 6px; }
+	.tl-nav-btn { display: inline-block; margin-left: 4px; padding: 1px 8px; border-radius: 10px; background: #E8F5E9; color: #27AE60; font-size: 0.68rem; text-decoration: none; font-weight: 600; white-space: nowrap; }
+	.tl-nav-btn:active { background: #C8E6C9; }
 .tl-delete { padding: 2px 6px; border: none; background: transparent; font-size: 1rem; cursor: pointer; color: #ccc; border-radius: 8px; }
 .tl-delete:active { color: var(--must); background: #FDEAEA; }
 
@@ -237,11 +244,26 @@ body {
 .hidden { display: none !important; }
 
 @media (max-width: 480px) {
-  .day-row { flex-wrap: wrap; }
-  .day-info { min-width: auto; flex-direction: row; gap: 6px; align-items: center; width: 100%; padding: 8px 12px; }
-  .day-slot { width: 100%; }
-  .day-note { width: 100%; border-left: none; }
-  .pool-cards { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+  .day-row { flex-wrap: nowrap; align-items: center; }
+  .day-row .day-num { font-size: 0.82rem; }
+  .day-row .day-date { font-size: 0.68rem; }
+  .day-row .day-city { font-size: 0.64rem; padding: 1px 6px; }
+  .day-info { min-width: auto; flex-direction: row; gap: 4px; align-items: center; padding: 8px 6px 8px 10px; flex-shrink: 0; }
+  .day-slot { flex: 1; min-width: 0; padding: 6px 8px; }
+  .day-slot .slot-card { padding: 6px 10px; gap: 6px; }
+  .day-slot .slot-card .sc-name { font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .day-slot .slot-card .sc-meta { font-size: 0.66rem; }
+  .day-slot .slot-card .sc-icon { font-size: 1.2rem; }
+  .day-slot .slot-empty { font-size: 0.72rem; padding: 8px; }
+  .day-note { width: 100%; border-left: none; font-size: 0.68rem; padding: 2px 8px 6px; }
+  .wx-btn { width: 26px; height: 26px; font-size: 0.85rem; }
+  .wx-toggle { margin-top: 0; }
+
+  .pool-cards { flex-wrap: wrap; overflow-x: visible; }
+  .pool-card { min-width: 0; flex: 1 1 calc(50% - 8px); max-width: calc(50% - 8px); font-size: 0.74rem; padding: 8px 10px; }
+  .pool-section { max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .pool-section::-webkit-scrollbar { width: 4px; }
+  .pool-section::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
   .expense-table input, .expense-table select { width: 70px; font-size: 0.75rem; }
   .expense-wrap { padding: 12px 8px; }
   .expense-table { font-size: 0.72rem; }
@@ -257,7 +279,7 @@ body {
 <!-- Hero -->
 <div class="hero">
   <h1>Thailand Trip Planner</h1>
-  <p class="subtitle">抽卡模式 · 看天气出牌 · 半玩半躺 <span style="font-size:0.7rem;opacity:0.6;margin-left:6px;border:1px solid rgba(255,255,255,0.3);border-radius:10px;padding:1px 8px">v1.1</span></p>
+  <p class="subtitle">抽卡模式 · 看天气出牌 · 半玩半躺 <span style="font-size:0.7rem;opacity:0.6;margin-left:6px;border:1px solid rgba(255,255,255,0.3);border-radius:10px;padding:1px 8px">v1.2</span></p>
   <div class="dates">
     <span class="date-tag">8.7 晚 成都天府</span>
     <span class="date-tag">曼谷 8.8 - 8.11</span>
@@ -320,7 +342,7 @@ body {
 
 <!-- Footer -->
 <div class="footer">
-  <p>Thailand Trip Planner v1.1 · 手机优先 · <span style="opacity:0.6">yuzhan777.github.io/thailand-trip</span></p>
+  <p>Thailand Trip Planner v1.2 · 手机优先 · <span style="opacity:0.6">yuzhan777.github.io/thailand-trip</span></p>
 </div>
 
 <script>
@@ -900,18 +922,24 @@ function renderDayView(idx) {
   tlEl.innerHTML = `
     <div class="day-tl-title">📋 当日时间线 (可编辑)</div>
     <div class="tl-entries">
-      ${entries.map((e, i) => `
-        <div class="tl-entry">
+      ${entries.map((e, i) => {
+        const isTransp = isPureTransport(e);
+        const prevEntry = i > 0 ? entries[i-1] : null;
+        const hasNav = isTransp && prevEntry && prevEntry.coords && e.coords;
+        const navUrl = hasNav ? amapNav(prevEntry.coords, e.coords, e.transport) : '';
+        return `
+        <div class="tl-entry${isTransp?' is-transport':''}">
           <div class="tl-time"><input value="${e.time}" onchange="updateEntry('${day.id}',${i},'time',this.value)" style="width:56px;text-align:center;font-weight:600"></div>
           <div class="tl-dot ${e.transport||''}" title="${i+1}"></div>
           <div class="tl-content">
             <input class="tl-act" value="${e.activity}" onchange="updateEntry('${day.id}',${i},'activity',this.value)" placeholder="活动描述">
             <input class="tl-loc" value="${e.location||''}" onchange="updateEntry('${day.id}',${i},'location',this.value)" placeholder="地点 (可选)">
             ${e.transport ? `<span class="tl-transport">${transportIcon(e.transport)} ${transportLabel(e.transport)}</span>` : ''}
+            ${hasNav ? `<a class="tl-nav-btn" href="${navUrl}" target="_blank" onclick="event.stopPropagation()" title="Google Maps导航">🧭 导航</a>` : ''}
           </div>
           <button class="tl-delete" onclick="deleteEntry('${day.id}',${i})" title="删除">✕</button>
-        </div>
-      `).join('')}
+        </div>`;
+      }).join('')}
     </div>
     <div class="food-row">
       <span class="food-label">🍽️ 晚餐</span>
@@ -939,6 +967,23 @@ function transportLabel(t) {
   const map = { walk:'步行', bts:'BTS轻轨', boat:'公交船', ferry:'轮渡', car:'包车/Uber' };
   return map[t] || t;
 }
+
+	const EXPERIENCE_KEYWORDS = ['游船','出海','独木舟','浮潜','橙色旗','公交船','船游','观光','游览','夜市','日落','咖啡','冲浪','游泳','跳岛','攀牙','邦德','Bangsaen','沙滩','海滩','老镇','集市','市场','骑楼','街拍','书店','Campus','Bookhemian','泳池','丛林','神仙半岛','三湾','悬崖','真理寺'];
+	function isPureTransport(entry) {
+	  if (!entry.transport) return false;
+	  const act = entry.activity || '';
+	  for (const kw of EXPERIENCE_KEYWORDS) {
+	    if (act.includes(kw)) return false;
+	  }
+	  return true;
+	}
+
+	function amapNav(fromCoords, toCoords, mode) {
+	  // 高德导航 URI: lng,lat 顺序
+	  const modeMap = { walk:'步行', bts:'公交', car:'驾车', boat:'公交', ferry:'公交' };
+	  const m = modeMap[mode] || '驾车';
+	  return `https://uri.amap.com/navigation?from=${fromCoords[1]},${fromCoords[0]},起点&to=${toCoords[1]},${toCoords[0]},终点&mode=${m}`;
+	}
 
 function updateEntry(dayId, idx, field, value) {
   if (!timelineEntries[dayId]) return;
@@ -992,16 +1037,32 @@ function makeIcon(type, num) {
 }
 
 function smoothCoords(coords, steps) {
-  steps = steps || Math.max(8, coords.length * 3);
+  steps = steps || Math.max(12, coords.length * 4);
   if (coords.length < 2) return coords;
+  // 2-point: quadratic bezier with offset midpoint for visual curve
   if (coords.length === 2) {
+    const [lat1, lng1] = coords[0];
+    const [lat2, lng2] = coords[1];
+    const dLat = lat2 - lat1;
+    const dLng = lng2 - lng1;
+    const dist = Math.sqrt(dLat*dLat + dLng*dLng);
+    const offset = dist * 0.12;
+    const nx = -dLng / (dist || 1);
+    const ny = dLat / (dist || 1);
+    const cpLat = (lat1 + lat2) / 2 + ny * offset;
+    const cpLng = (lng1 + lng2) / 2 + nx * offset;
     const result = [];
     for (let i = 0; i <= steps; i++) {
-      const t = i/steps;
-      result.push([coords[0][0]+(coords[1][0]-coords[0][0])*t, coords[0][1]+(coords[1][1]-coords[0][1])*t]);
+      const t = i / steps;
+      const u = 1 - t;
+      result.push([
+        u*u*lat1 + 2*u*t*cpLat + t*t*lat2,
+        u*u*lng1 + 2*u*t*cpLng + t*t*lng2
+      ]);
     }
     return result;
   }
+  // 3+ points: Catmull-Rom
   const result = [];
   for (let s = 0; s < coords.length - 1; s++) {
     const p0 = coords[Math.max(0,s-1)], p1=coords[s], p2=coords[s+1], p3=coords[Math.min(coords.length-1,s+2)];
@@ -1037,6 +1098,7 @@ function initDayMap() {
 
   // Render markers
   let markerNum = 0;
+  let legendPlaces = new Set();
   entries.forEach(e => {
     if (e.coords) {
       markerNum++;
@@ -1049,6 +1111,7 @@ function initDayMap() {
       L.marker(e.coords, {icon:makeIcon(iconType, markerNum)})
         .addTo(_map)
         .bindPopup(`<strong>${markerNum}. ${e.activity}</strong>${e.location?`<br><span style="font-size:0.78rem;color:#636E72">${e.location}</span>`:''}`);
+      if (!isPureTransport(e)) legendPlaces.add(iconType);
     }
   });
 
@@ -1083,15 +1146,27 @@ function initDayMap() {
     }
   }
 
-  // Legend
+  // Legend — two rows: places + transport
   const legEl = document.getElementById('dayMapLegend');
-  legEl.innerHTML = Array.from(legendTypes).map(t => {
-    const isDashed = T_DASH[t];
-    const lineEl = isDashed
-      ? `<span class="l-dash" style="border-color:${T_COLORS[t]}"></span>`
-      : `<span class="l-solid" style="background:${T_COLORS[t]}"></span>`;
-    return `<span>${lineEl} ${transportIcon(t)} ${transportLabel(t)}</span>`;
-  }).join('');
+  let legHTML = '';
+  if (legendPlaces.size > 0) {
+    legHTML += '<div style="margin-bottom:6px">' + Array.from(legendPlaces).map(t => {
+      const c = ICON_STYLES[t] || ICON_STYLES.default;
+      const e = ICON_EMOJI[t] || ICON_EMOJI.default;
+      const label = { food:'美食', sunset:'日落', cafe:'咖啡', boat:'游船', beach:'海滩', culture:'文化', market:'市场', start:'起/终点', default:'景点' };
+      return `<span style="margin-right:10px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c};margin-right:3px"></span>${e} ${label[t]||'景点'}</span>`;
+    }).join('') + '</div>';
+  }
+  if (legendTypes.size > 0) {
+    legHTML += '<div>' + Array.from(legendTypes).map(t => {
+      const isDashed = T_DASH[t];
+      const lineEl = isDashed
+        ? `<span class="l-dash" style="border-color:${T_COLORS[t]}"></span>`
+        : `<span class="l-solid" style="background:${T_COLORS[t]}"></span>`;
+      return `<span style="margin-right:10px">${lineEl} ${transportIcon(t)} ${transportLabel(t)}</span>`;
+    }).join('') + '</div>';
+  }
+  legEl.innerHTML = legHTML;
 
   _map.setView(base.center, base.zoom);
   setTimeout(() => _map.invalidateSize(), 150);
@@ -1166,6 +1241,35 @@ function renderExpenseView() {
   const pct = Math.round((totalGroup / totalBudget) * 100);
   if (bar) { bar.style.width = Math.min(pct, 100) + '%'; bar.classList.toggle('over', pct > 100); }
   if (label) label.textContent = `已记录 ¥${totalGroup.toLocaleString()} / 预算 ¥${totalBudget.toLocaleString()} (${pct}%)`;
+
+  // Per-person summary
+  const persons = ['冯', '欧', '高', '张'];
+  const avgPerPerson = Math.round(totalGroup / 4);
+  let personSummary = '<div style="margin-top:16px;padding:12px 14px;background:#F8F9FA;border-radius:12px;border:1px solid var(--border)">';
+  personSummary += '<div style="font-weight:700;font-size:0.82rem;margin-bottom:8px">👥 个人垫付统计 · AA 分摊</div>';
+  personSummary += '<div style="font-size:0.74rem;color:var(--text-light);margin-bottom:10px">人均应付: <b>¥' + avgPerPerson.toLocaleString() + '</b>（总支出 ¥' + totalGroup.toLocaleString() + ' ÷ 4 人）</div>';
+  persons.forEach(p => {
+    const paid = expenseItems.reduce((sum, r) => {
+      if (r.payer !== p) return sum;
+      if (r.total != null) return sum + r.total;
+      if (r.perPerson != null) return sum + r.perPerson * 4;
+      return sum;
+    }, 0);
+    const balance = paid - avgPerPerson;
+    const color = balance > 0 ? 'var(--opt)' : balance < 0 ? 'var(--must)' : 'var(--text-light)';
+    const arrow = balance > 0 ? '应收' : balance < 0 ? '应付' : '持平';
+    personSummary += '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;font-size:0.8rem">';
+    personSummary += '<span><b>' + p + '</b> 垫付了 ¥' + paid.toLocaleString() + '</span>';
+    personSummary += '<span style="color:' + color + ';font-weight:600">' + arrow + ' ¥' + Math.abs(balance).toLocaleString() + '</span>';
+    personSummary += '</div>';
+  });
+  personSummary += '</div>';
+  const existingSummary = document.getElementById('personSummary');
+  if (existingSummary) existingSummary.remove();
+  const summaryWrap = document.createElement('div');
+  summaryWrap.id = 'personSummary';
+  summaryWrap.innerHTML = personSummary;
+  document.getElementById('expenseTable').after(summaryWrap);
 }
 
 function onPerPersonChange(id, val) {

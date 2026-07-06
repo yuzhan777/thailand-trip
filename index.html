@@ -77,6 +77,7 @@ body {
 
 /* Weather Toggle */
 .wx-toggle { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.day-city-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
 .wx-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; background: #fff; transition: all 0.2s; padding: 0; }
 .wx-btn.active-s { background: #FFF3E0; border-color: var(--sunny); }
 .wx-btn.active-r { background: #EDF2F7; border-color: var(--rainy); }
@@ -244,11 +245,11 @@ body {
 .hidden { display: none !important; }
 
 @media (max-width: 480px) {
-  .day-row { flex-wrap: nowrap; align-items: center; }
-  .day-row .day-num { font-size: 0.82rem; }
-  .day-row .day-date { font-size: 0.68rem; }
-  .day-row .day-city { font-size: 0.64rem; padding: 1px 6px; }
-  .day-info { min-width: auto; flex-direction: row; gap: 4px; align-items: center; padding: 8px 6px 8px 10px; flex-shrink: 0; }
+  .day-row { flex-wrap: wrap; align-items: stretch; }
+  .day-row .day-num { font-size: 0.78rem; }
+  .day-row .day-date { font-size: 0.65rem; }
+  .day-row .day-city { font-size: 0.6rem; padding: 1px 6px; }
+  .day-info { min-width: auto; flex: 0 0 32%; flex-direction: column; gap: 2px; align-items: flex-start; padding: 8px 6px 8px 10px; }
   .day-slot { flex: 1; min-width: 0; padding: 6px 8px; }
   .day-slot .slot-card { padding: 6px 10px; gap: 6px; }
   .day-slot .slot-card .sc-name { font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -256,8 +257,9 @@ body {
   .day-slot .slot-card .sc-icon { font-size: 1.2rem; }
   .day-slot .slot-empty { font-size: 0.72rem; padding: 8px; }
   .day-note { width: 100%; border-left: none; font-size: 0.68rem; padding: 2px 8px 6px; }
+  .return-note { width: 100%; border-left: none; font-size: 0.74rem; padding: 2px 10px 6px; color: var(--text-light); display: flex; gap: 6px; flex-wrap: wrap; }
   .wx-btn { width: 26px; height: 26px; font-size: 0.85rem; }
-  .wx-toggle { margin-top: 0; }
+  .wx-toggle, .day-city-row { margin-top: 0; }
 
   .pool-cards { flex-wrap: wrap; overflow-x: visible; }
   .pool-card { min-width: 0; flex: 1 1 calc(50% - 8px); max-width: calc(50% - 8px); font-size: 0.74rem; padding: 8px 10px; }
@@ -650,7 +652,7 @@ function renderTimeline() {
 
     let slotHTML = '';
     if (!day.hasSlot) {
-      slotHTML = `<div class="day-slot" style="color:var(--text-light);font-size:0.85rem">早饭 · 收拾行李 · 前往机场</div>`;
+      slotHTML = `<div class="return-note">🏠 早饭 · 收拾行李 · 前往机场</div>`;
     } else if (card) {
       slotHTML = `
         <div class="day-slot" style="cursor:pointer" onclick="openPicker('${day.id}')">
@@ -672,20 +674,19 @@ function renderTimeline() {
         <div class="day-slot slot-empty" data-day-id="${day.id}"
              onclick="openPicker('${day.id}')"
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-          ${day.slotType === 'half' ? '点击选择半天卡 · 下午飞普吉' : '点击选择卡片'}
+          ${day.slotType === 'half' ? '点击选择半天卡' : '点击选择卡片'}
         </div>`;
     }
 
     return `
       <div class="day-row ${cityClass}" data-day-id="${day.id}">
         <div class="day-info">
-          <div class="day-num">Day ${day.num}</div>
-          <div class="day-date">${day.date} ${day.weekday}</div>
-          <div class="day-city ${day.city==='bangkok'?'city-bkk':'city-pkt'}">${day.cityName}</div>
-          ${day.hasSlot ? `
-          <div class="wx-toggle">
-            <button class="wx-btn ${wx==='sunny'?'active-s':'active-r'}" onclick="event.stopPropagation();toggleDayWeather('${day.id}')" title="${wx==='sunny'?'晴天':'雨天'}">${wx==='sunny'?'☀️':'🌧️'}</button>
-          </div>` : ''}
+          <div class="day-num">Day ${day.num} · ${day.date}</div>
+          <div class="day-city-row">
+            <div class="day-city ${day.city==='bangkok'?'city-bkk':'city-pkt'}">${day.cityName}</div>
+            ${day.hasSlot ? `
+            <button class="wx-btn ${wx==='sunny'?'active-s':'active-r'}" onclick="event.stopPropagation();toggleDayWeather('${day.id}')" title="${wx==='sunny'?'晴天':'雨天'}">${wx==='sunny'?'☀️':'🌧️'}</button>` : ''}
+          </div>
         </div>
         ${slotHTML}
         ${day.note ? `<div class="day-note">${day.note}</div>` : ''}
@@ -1080,6 +1081,30 @@ const T_COLORS = { walk:'#27AE60', bts:'#3498DB', boat:'#E67E22', ferry:'#2980B9
 const T_DASH = { walk:'8,6', bts:'2,6', boat:null, ferry:'2,8', car:null };
 const T_WIDTH = { walk:3, bts:4, boat:4, ferry:3, car:4 };
 
+// OSRM routing — free, no API key, OpenStreetMap-based, best Thailand coverage
+const OSRM_CACHE = {};
+const OSRM_BASE = 'https://router.project-osrm.org/route/v1';
+function osrmProfile(t) {
+  if (t === 'walk') return 'walking';
+  if (t === 'car') return 'driving';
+  return null;
+}
+async function fetchOSRMRoute(from, to, profile) {
+  const cacheKey = `${from[1]},${from[0]}-${to[1]},${to[0]}-${profile}`;
+  if (OSRM_CACHE[cacheKey]) return OSRM_CACHE[cacheKey];
+  try {
+    const url = `${OSRM_BASE}/${profile}/${from[1]},${from[0]};${to[1]},${to[0]}?geometries=geojson&overview=full`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+      OSRM_CACHE[cacheKey] = coords;
+      return coords;
+    }
+  } catch(e) { /* fall through to bezier */ }
+  return null;
+}
+
 function initDayMap() {
   const container = document.getElementById('dayMapContainer');
   if (!_map) {
@@ -1128,8 +1153,9 @@ function initDayMap() {
     }
   }
 
-  // Render routes with transport styling
+  // Render routes — bezier as instant fallback, OSRM replaces walk/car
   let legendTypes = new Set();
+  const routeSegments = [];
   for (let i = 1; i < entries.length; i++) {
     const prev = entries[i-1];
     const curr = entries[i];
@@ -1137,14 +1163,32 @@ function initDayMap() {
       const t = curr.transport || 'walk';
       legendTypes.add(t);
       const smoothed = smoothCoords([prev.coords, curr.coords]);
-      L.polyline(smoothed, {
+      const layer = L.polyline(smoothed, {
         color: T_COLORS[t] || '#999',
         weight: T_WIDTH[t] || 3,
         dashArray: T_DASH[t] || null,
         opacity: 0.8
       }).addTo(_map).bindPopup(`${transportIcon(t)} ${transportLabel(t)}: ${curr.activity}`);
+      routeSegments.push({ layer, from: prev.coords, to: curr.coords, t });
     }
   }
+  // Async: replace walk & car bezier curves with OSRM road-following routes
+  (async () => {
+    for (const seg of routeSegments) {
+      const profile = osrmProfile(seg.t);
+      if (!profile) continue;
+      const coords = await fetchOSRMRoute(seg.from, seg.to, profile);
+      if (coords && coords.length > 0) {
+        _map.removeLayer(seg.layer);
+        L.polyline(coords, {
+          color: T_COLORS[seg.t] || '#999',
+          weight: T_WIDTH[seg.t] || 3,
+          dashArray: T_DASH[seg.t] || null,
+          opacity: 0.8
+        }).addTo(_map).bindPopup(seg.layer.getPopup().getContent());
+      }
+    }
+  })();
 
   // Legend — two rows: places + transport
   const legEl = document.getElementById('dayMapLegend');
@@ -1173,26 +1217,26 @@ function initDayMap() {
 }
 
 // ==================== EXPENSE VIEW ====================
-const PAYERS = ['', '冯', '欧', '高', '张'];
+const PAYERS = ['', '冯波', '欧宝', '大高', '张姐'];
 const CATEGORIES = ['机票', '住宿', '餐饮', '活动', '交通', '其他'];
 
 let expenseItems = [
-  { id:'e1', cat:'机票', item:'去程 · 成都→曼谷', perPerson:800, total:null, payer:'冯', note:'8.7 22:00' },
-  { id:'e2', cat:'机票', item:'返程 · 普吉→成都', perPerson:1500, total:null, payer:'高', note:'8.16 14:00' },
-  { id:'e3', cat:'住宿', item:'曼谷 4晚 · 两间房', perPerson:null, total:3000, payer:'冯', note:'Asok BTS附近' },
-  { id:'e4', cat:'住宿', item:'普吉 5晚 · 两间房', perPerson:null, total:4000, payer:'高', note:'卡伦海滩' },
-  { id:'e5', cat:'餐饮', item:'Day 1 晚餐 · 唐人街', perPerson:80, total:null, payer:'张', note:'8.8' },
-  { id:'e6', cat:'餐饮', item:'Day 2 晚餐 · 素坤逸', perPerson:60, total:null, payer:'欧', note:'8.9' },
-  { id:'e7', cat:'餐饮', item:'Day 3 晚餐', perPerson:80, total:null, payer:'张', note:'8.10' },
-  { id:'e8', cat:'餐饮', item:'Day 4 晚餐 · 普吉第一顿', perPerson:120, total:null, payer:'冯', note:'8.11' },
-  { id:'e9', cat:'餐饮', item:'Day 5 晚餐', perPerson:100, total:null, payer:'欧', note:'8.12' },
-  { id:'e10', cat:'餐饮', item:'Day 6 Fine Dining · 悬崖餐厅', perPerson:300, total:null, payer:'高', note:'8.13' },
-  { id:'e11', cat:'餐饮', item:'Day 7 晚餐', perPerson:100, total:null, payer:'张', note:'8.14' },
-  { id:'e12', cat:'餐饮', item:'Day 8 晚餐 · 最后一晚', perPerson:150, total:null, payer:'冯', note:'8.15' },
-  { id:'e13', cat:'活动', item:'跳岛出海一日游', perPerson:400, total:null, payer:'高', note:'攀牙湾' },
-  { id:'e14', cat:'活动', item:'芭提雅包车+射击', perPerson:null, total:1400, payer:'冯', note:'4人分摊 · 人均¥350' },
-  { id:'e15', cat:'活动', item:'其他活动/门票', perPerson:500, total:null, payer:'欧', note:'大象保护/按摩等' },
-  { id:'e16', cat:'交通', item:'市内交通 · 9天', perPerson:300, total:null, payer:'张', note:'BTS/打车/Grab' },
+  { id:'e1', cat:'机票', item:'去程 · 成都→曼谷', perPerson:800, total:null, payer:'冯波', note:'8.7 22:00' },
+  { id:'e2', cat:'机票', item:'返程 · 普吉→成都', perPerson:1500, total:null, payer:'大高', note:'8.16 14:00' },
+  { id:'e3', cat:'住宿', item:'曼谷 4晚 · 两间房', perPerson:null, total:3000, payer:'冯波', note:'Asok BTS附近' },
+  { id:'e4', cat:'住宿', item:'普吉 5晚 · 两间房', perPerson:null, total:4000, payer:'大高', note:'卡伦海滩' },
+  { id:'e5', cat:'餐饮', item:'Day 1 晚餐 · 唐人街', perPerson:80, total:null, payer:'张姐', note:'8.8' },
+  { id:'e6', cat:'餐饮', item:'Day 2 晚餐 · 素坤逸', perPerson:60, total:null, payer:'欧宝', note:'8.9' },
+  { id:'e7', cat:'餐饮', item:'Day 3 晚餐', perPerson:80, total:null, payer:'张姐', note:'8.10' },
+  { id:'e8', cat:'餐饮', item:'Day 4 晚餐 · 普吉第一顿', perPerson:120, total:null, payer:'冯波', note:'8.11' },
+  { id:'e9', cat:'餐饮', item:'Day 5 晚餐', perPerson:100, total:null, payer:'欧宝', note:'8.12' },
+  { id:'e10', cat:'餐饮', item:'Day 6 Fine Dining · 悬崖餐厅', perPerson:300, total:null, payer:'大高', note:'8.13' },
+  { id:'e11', cat:'餐饮', item:'Day 7 晚餐', perPerson:100, total:null, payer:'张姐', note:'8.14' },
+  { id:'e12', cat:'餐饮', item:'Day 8 晚餐 · 最后一晚', perPerson:150, total:null, payer:'冯波', note:'8.15' },
+  { id:'e13', cat:'活动', item:'跳岛出海一日游', perPerson:400, total:null, payer:'大高', note:'攀牙湾' },
+  { id:'e14', cat:'活动', item:'芭提雅包车+射击', perPerson:null, total:1400, payer:'冯波', note:'4人分摊 · 人均¥350' },
+  { id:'e15', cat:'活动', item:'其他活动/门票', perPerson:500, total:null, payer:'欧宝', note:'大象保护/按摩等' },
+  { id:'e16', cat:'交通', item:'市内交通 · 9天', perPerson:300, total:null, payer:'张姐', note:'BTS/打车/Grab' },
   { id:'e17', cat:'其他', item:'购物/伴手礼/杂项', perPerson:500, total:null, payer:'', note:'' },
 ];
 
@@ -1243,7 +1287,7 @@ function renderExpenseView() {
   if (label) label.textContent = `已记录 ¥${totalGroup.toLocaleString()} / 预算 ¥${totalBudget.toLocaleString()} (${pct}%)`;
 
   // Per-person summary
-  const persons = ['冯', '欧', '高', '张'];
+  const persons = ['冯波', '欧宝', '大高', '张姐'];
   const avgPerPerson = Math.round(totalGroup / 4);
   let personSummary = '<div style="margin-top:16px;padding:12px 14px;background:#F8F9FA;border-radius:12px;border:1px solid var(--border)">';
   personSummary += '<div style="font-weight:700;font-size:0.82rem;margin-bottom:8px">👥 个人垫付统计 · AA 分摊</div>';

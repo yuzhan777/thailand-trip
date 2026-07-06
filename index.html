@@ -506,7 +506,7 @@ let pickerDayId = null;
 
 // ==================== PERSISTENCE & SYNC ====================
 const SUPABASE_URL = 'https://vfpoczzviqdbwcaowjle.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_iTMXD_7uDaFcTq5p4nymkA_Jwhp91Wy';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcG9jenp2aXFkYndjYW93amxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzIzMzYsImV4cCI6MjA5ODkwODMzNn0.fM6Y1DW-Ndvtz5dkxGIpHaimsbFLT3lkEQN_OtveUMQ';
 let _sb = null, _syncTimer = null, _version = 0, _suppressSync = false;
 function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); return _sb; }
 

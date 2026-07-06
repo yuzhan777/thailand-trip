@@ -275,6 +275,7 @@ body {
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 
@@ -503,6 +504,93 @@ let currentView = 'plan';
 let currentDayIdx = 0;
 let pickerDayId = null;
 
+// ==================== PERSISTENCE & SYNC ====================
+const SUPABASE_URL = 'https://vfpoczzviqdbwcaowjle.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_iTMXD_7uDaFcTq5p4nymkA_Jwhp91Wy';
+let _sb = null, _syncTimer = null, _version = 0, _suppressSync = false;
+function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); return _sb; }
+
+function packState() {
+  return { assignments, dayWeather, dayFood, timelineEntries, expenseItems };
+}
+function unpackState(s) {
+  if (s.assignments) Object.assign(assignments, s.assignments);
+  if (s.dayWeather) Object.assign(dayWeather, s.dayWeather);
+  if (s.dayFood) Object.assign(dayFood, s.dayFood);
+  if (s.timelineEntries) { for (const k in s.timelineEntries) timelineEntries[k] = s.timelineEntries[k]; }
+  if (s.expenseItems) expenseItems = s.expenseItems;
+}
+
+function saveLocal() {
+  const data = packState();
+  data._version = _version;
+  localStorage.setItem('thailand-trip-v2', JSON.stringify(data));
+}
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem('thailand-trip-v2');
+    if (!raw) return false;
+    unpackState(JSON.parse(raw));
+    return true;
+  } catch(e) { return false; }
+}
+
+async function syncToCloud() {
+  const client = sb();
+  if (!client) return;
+  _version = Date.now();
+  const state = packState();
+  saveLocal();
+  try {
+    await client.from('trip_state').upsert({ id:'default', data:state, version:_version, updated_at:new Date().toISOString() });
+  } catch(e) { /* offline */ }
+}
+
+function scheduleSync() {
+  if (_suppressSync) return;
+  saveLocal();
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(syncToCloud, 400);
+}
+
+async function loadFromCloud() {
+  const client = sb();
+  if (!client) return false;
+  try {
+    const { data, error } = await client.from('trip_state').select('*').eq('id','default').single();
+    if (error || !data || !data.data) return false;
+    unpackState(data.data);
+    _version = data.version || 0;
+    saveLocal();
+    return true;
+  } catch(e) { return false; }
+}
+
+function setupRealtime() {
+  const client = sb();
+  if (!client) return;
+  client.channel('trip-state-chan')
+    .on('postgres_changes', { event:'*', schema:'public', table:'trip_state', filter:'id=eq.default' },
+      (payload) => {
+        const d = payload.new;
+        if (d && d.data && d.version > _version) {
+          _suppressSync = true;
+          unpackState(d.data);
+          _version = d.version;
+          saveLocal();
+          refreshCurrentView();
+          _suppressSync = false;
+        }
+      }
+    ).subscribe();
+}
+
+function refreshCurrentView() {
+  if (currentView === 'plan') renderPlanView();
+  else if (currentView === 'day') { renderDayView(currentDayIdx); initDayMap(); }
+  else if (currentView === 'expense') renderExpenseView();
+}
+
 function getCardById(id) {
   for (const group of Object.values(CARD_DATA)) {
     const c = group.find(c => c.id === id);
@@ -639,6 +727,7 @@ function removeCard(dayId) {
 function renderPlanView() {
   renderTimeline();
   renderCardPool();
+  scheduleSync();
 }
 
 function renderTimeline() {
@@ -957,6 +1046,7 @@ function renderDayView(idx) {
 
   // Render map
   initDayMap();
+  scheduleSync();
 }
 
 function transportIcon(t) {
@@ -1314,6 +1404,7 @@ function renderExpenseView() {
   summaryWrap.id = 'personSummary';
   summaryWrap.innerHTML = personSummary;
   document.getElementById('expenseTable').after(summaryWrap);
+  scheduleSync();
 }
 
 function onPerPersonChange(id, val) {
@@ -1368,7 +1459,12 @@ function addExpenseEntry() {
 }
 
 // ==================== INIT ====================
-function init() {
+async function init() {
+  // Hydrate state: localStorage instant → cloud overwrites if newer
+  loadLocal();
+  const fromCloud = await loadFromCloud();
+  if (!fromCloud) { loadLocal(); scheduleSync(); /* push local to cloud */ }
+  setupRealtime();
   renderPlanView();
   bindTouchHandlers();
   document.addEventListener('dragover', e => e.preventDefault());

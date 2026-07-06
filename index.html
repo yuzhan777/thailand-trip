@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thailand Trip Planner · 抽卡旅行</title>
+<style>
+:root {
+  --sunny: #E67E22; --rainy: #4A90B8; --bangkok: #E67E22; --phuket: #2196A8;
+  --must: #E74C3C; --opt: #27AE60; --rec: #2980B9;
+  --text: #2D3436; --text-light: #636E72; --bg: #F8F9FA;
+  --card-bg: #fff; --border: #e0e0e0; --radius: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff; padding: 50px 20px; text-align: center; position: relative; overflow: hidden;
+}
+.hero h1 { font-size: 2.6rem; position: relative; z-index: 1; }
+.hero .subtitle { font-size: 1.1rem; opacity: 0.8; position: relative; z-index: 1; margin-top: 4px; }
+.hero .dates { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 1; }
+.hero .date-tag { background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); padding: 6px 16px; border-radius: 50px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.2); }
+
+/* View Tabs */
+.view-tabs { display: flex; justify-content: center; gap: 6px; padding: 16px 20px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
+.view-tab { padding: 10px 22px; border-radius: 50px; border: 1px solid #ddd; cursor: pointer; font-size: 0.9rem; background: #fff; transition: all 0.2s; font-weight: 600; }
+.view-tab.active { background: #2D3436; color: #fff; border-color: #2D3436; }
+.view-tab:hover:not(.active) { border-color: #999; }
+
+/* Weather Bar */
+.weather-bar { display: flex; justify-content: center; gap: 10px; padding: 14px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid #eee; position: sticky; top: 57px; z-index: 98; }
+.weather-btn { padding: 8px 20px; border-radius: 50px; border: 2px solid #ddd; cursor: pointer; font-size: 0.88rem; font-weight: 600; background: #fff; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+.weather-btn.active-s { background: #FFF3E0; border-color: var(--sunny); color: var(--sunny); }
+.weather-btn.active-r { background: #EDF2F7; border-color: var(--rainy); color: var(--rainy); }
+
+/* Sections */
+.section { display: none; }
+.section.active { display: block; }
+.section-inner { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+/* ====== PLAN VIEW ====== */
+.plan-layout { display: flex; flex-direction: column; gap: 24px; }
+
+/* Timeline (top) */
+.timeline-days { display: flex; flex-direction: column; gap: 10px; }
+.day-row { display: flex; align-items: stretch; gap: 12px; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; transition: all 0.2s; }
+.day-row.bangkok { border-left: 4px solid var(--bangkok); }
+.day-row.phuket { border-left: 4px solid var(--phuket); }
+.day-row.return-day { border-left: 4px solid #999; opacity: 0.75; }
+.day-row.drag-over { border-color: #3498DB; box-shadow: 0 0 0 2px rgba(52,152,219,0.3); }
+.day-row.drag-invalid { border-color: #E74C3C; }
+
+.day-info { padding: 14px 18px; min-width: 130px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #f0f0f0; }
+.day-info .day-num { font-size: 1.1rem; font-weight: 700; }
+.day-info .day-date { font-size: 0.85rem; color: var(--text-light); }
+.day-info .day-city { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; margin-top: 4px; }
+.city-bkk { background: #FFF3E0; color: var(--bangkok); }
+.city-pkt { background: #E0F7FA; color: var(--phuket); }
+
+.day-slot { flex: 1; padding: 12px 18px; display: flex; align-items: center; min-height: 56px; }
+.slot-empty { border: 2px dashed #ddd; border-radius: 10px; margin: 8px; color: #bbb; font-size: 0.88rem; justify-content: center; transition: all 0.2s; cursor: default; }
+.slot-empty.drag-over { border-color: #3498DB; background: rgba(52,152,219,0.04); color: #3498DB; }
+
+.slot-card { background: #F8F9FA; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; width: 100%; border: 1px solid #e8e8e8; position: relative; }
+.slot-card .sc-icon { font-size: 1.5rem; }
+.slot-card .sc-info { flex: 1; }
+.slot-card .sc-name { font-weight: 600; font-size: 0.92rem; }
+.slot-card .sc-meta { font-size: 0.75rem; color: var(--text-light); }
+.slot-card .sc-remove { cursor: pointer; padding: 4px 8px; border-radius: 6px; border: none; background: #f0f0f0; font-size: 0.85rem; transition: all 0.2s; }
+.slot-card .sc-remove:hover { background: #FDEAEA; color: var(--must); }
+.slot-card.dragging { opacity: 0.5; transform: scale(0.97); }
+
+.tag-badge { display: inline-block; padding: 1px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; }
+.tag-must { background: #FDEAEA; color: var(--must); }
+.tag-opt { background: #E8F5E9; color: var(--opt); }
+.tag-rec { background: #E3F2FD; color: var(--rec); }
+
+.day-note { font-size: 0.75rem; color: var(--text-light); padding: 4px 12px; display: flex; align-items: center; gap: 4px; border-left: 1px solid #f0f0f0; min-width: 110px; }
+
+/* Card Pool (bottom) */
+.pool-section { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 18px 20px; }
+.pool-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.pool-group { margin-bottom: 14px; }
+.pool-group-label { font-size: 0.78rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; }
+.pool-cards { display: flex; gap: 10px; flex-wrap: wrap; }
+.pool-card {
+  background: #F8F9FA; border: 1px solid #e8e8e8; border-radius: 12px; padding: 12px 16px;
+  cursor: grab; transition: all 0.2s; display: flex; align-items: center; gap: 10px; user-select: none;
+  min-width: 200px; flex: 0 0 auto;
+}
+.pool-card:hover { border-color: #3498DB; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.pool-card.dragging { opacity: 0.4; }
+.pool-card.dimmed { opacity: 0.4; pointer-events: none; }
+.pool-card .pc-icon { font-size: 1.3rem; }
+.pool-card .pc-info { flex: 1; min-width: 0; }
+.pool-card .pc-name { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pool-card .pc-summary { font-size: 0.72rem; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pool-card .pc-meta { display: flex; gap: 4px; margin-top: 2px; }
+.pc-weather { font-size: 0.7rem; padding: 1px 6px; border-radius: 6px; background: #f0f0f0; }
+
+/* ====== DAY VIEW ====== */
+.day-nav { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 12px 0; }
+.day-nav button { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.day-nav button:hover { background: #f0f0f0; }
+.day-nav .day-nav-title { font-weight: 700; font-size: 1.1rem; min-width: 220px; text-align: center; }
+
+.day-map-container { width: 100%; height: 45vh; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px; }
+
+.day-timeline { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; }
+.day-tl-title { font-weight: 700; font-size: 1rem; margin-bottom: 14px; }
+.day-tl-slots { display: flex; gap: 12px; flex-wrap: wrap; }
+.day-tl-slot { flex: 1; min-width: 160px; padding: 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.6; }
+.slot-am { background: #FFF8E1; }
+.slot-pm { background: #FFF3E0; }
+.slot-eve { background: #E8EAF6; }
+.slot-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-light); letter-spacing: 0.5px; }
+
+/* Map legend */
+.day-map-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 0.8rem; color: var(--text-light); }
+.day-map-legend span { display: flex; align-items: center; gap: 4px; }
+.legend-line { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.legend-dash { width: 18px; height: 0; border-top: 3px dashed; display: inline-block; }
+.legend-dot-line { width: 18px; height: 0; border-top: 3px dotted; display: inline-block; }
+
+/* ====== EXPENSE VIEW ====== */
+.expense-wrap { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; overflow-x: auto; }
+.expense-wrap h3 { margin-bottom: 16px; }
+.expense-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.expense-table th { background: #F8F9FA; padding: 10px 14px; text-align: left; font-size: 0.78rem; text-transform: uppercase; color: var(--text-light); border-bottom: 2px solid #e0e0e0; }
+.expense-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; }
+.expense-table input { width: 90px; padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.88rem; text-align: right; }
+.expense-table input:focus { outline: none; border-color: #3498DB; box-shadow: 0 0 0 2px rgba(52,152,219,0.15); }
+.expense-table .cat-header { font-weight: 700; background: #FAFAFA; }
+.expense-table .total-row td { font-weight: 700; border-top: 2px solid #e0e0e0; background: #F8F9FA; font-size: 0.95rem; }
+.expense-table .budget-row td { color: var(--must); }
+.budget-bar { height: 8px; background: #E8F5E9; border-radius: 4px; margin-top: 12px; overflow: hidden; }
+.budget-bar-fill { height: 100%; background: var(--opt); border-radius: 4px; transition: width 0.3s; }
+.budget-bar-fill.over { background: var(--must); }
+
+/* Footer */
+.footer { text-align: center; padding: 30px; color: var(--text-light); font-size: 0.82rem; }
+
+/* Misc */
+.hidden { display: none !important; }
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.8rem; }
+  .day-row { flex-wrap: wrap; }
+  .day-info { min-width: auto; flex-direction: row; gap: 8px; align-items: center; border-right: none; border-bottom: 1px solid #f0f0f0; width: 100%; }
+  .day-note { border-left: none; width: 100%; }
+  .pool-cards { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
+  .day-tl-slots { flex-direction: column; }
+}
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Thailand Trip Planner</h1>
+  <p class="subtitle">抽卡模式 · 看天气出牌 · 半玩半躺</p>
+  <div class="dates">
+    <span class="date-tag">8.7 晚 成都天府</span>
+    <span class="date-tag">曼谷 8.8 - 8.11</span>
+    <span class="date-tag">普吉 8.11 - 8.16</span>
+    <span class="date-tag">8.16 飞回成都</span>
+  </div>
+</div>
+
+<!-- View Tabs -->
+<div class="view-tabs" id="viewTabs">
+  <button class="view-tab active" onclick="showView('plan')"> 规划视图</button>
+  <button class="view-tab" onclick="showView('day')"> 日视图</button>
+  <button class="view-tab" onclick="showView('expense')"> 花销视图</button>
+</div>
+
+<!-- Weather Bar -->
+<div class="weather-bar hidden" id="weatherBar">
+  <button class="weather-btn active-s" onclick="setWeather('sunny')"> 晴天模式</button>
+  <button class="weather-btn" onclick="setWeather('rainy')"> 雨天模式</button>
+</div>
+
+<!-- ====== PLAN VIEW ====== -->
+<div class="section active" id="planView">
+  <div class="section-inner">
+    <div class="plan-layout">
+      <div class="timeline-days" id="timelineDays"></div>
+      <div class="pool-section">
+        <div class="pool-title"> 可选卡池 · 拖入上方时间线</div>
+        <div id="cardPool"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== DAY VIEW ====== -->
+<div class="section" id="dayView">
+  <div class="section-inner">
+    <div class="day-nav">
+      <button onclick="navigateDay(-1)"> Prev</button>
+      <span class="day-nav-title" id="dayNavTitle">Day 1 · 8.8 曼谷</span>
+      <button onclick="navigateDay(1)"> Next</button>
+    </div>
+    <div class="day-map-container" id="dayMapContainer"></div>
+    <div class="day-map-legend" id="dayMapLegend"></div>
+    <div class="day-timeline" id="dayTimeline"></div>
+  </div>
+</div>
+
+<!-- ====== EXPENSE VIEW ====== -->
+<div class="section" id="expenseView">
+  <div class="section-inner">
+    <div class="expense-wrap">
+      <h3> 花销统计 · 人均预算 ¥8,000</h3>
+      <table class="expense-table" id="expenseTable"></table>
+      <div class="budget-bar"><div class="budget-bar-fill" id="budgetBar"></div></div>
+      <p style="font-size:0.78rem;color:var(--text-light);margin-top:6px" id="budgetLabel"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Thailand Trip Planner v1.0 · 抽卡旅行模式</p>
+  <p style="margin-top:2px">到泰国看当天天气，抽一张卡，出发！</p>
+</div>
+
+<script>
+// ==================== DATA MODEL ====================
+const DAYS = [
+  { id:'d1', num:1, date:'8.8',  weekday:'周六', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full', note:'' },
+  { id:'d2', num:2, date:'8.9',  weekday:'周日', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full', note:'' },
+  { id:'d3', num:3, date:'8.10', weekday:'周一', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full', note:'' },
+  { id:'d4', num:4, date:'8.11', weekday:'周二', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'half', note:' 下午飞普吉' },
+  { id:'d5', num:5, date:'8.12', weekday:'周三', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
+  { id:'d6', num:6, date:'8.13', weekday:'周四', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
+  { id:'d7', num:7, date:'8.14', weekday:'周五', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
+  { id:'d8', num:8, date:'8.15', weekday:'周六', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
+  { id:'d9', num:9, date:'8.16', weekday:'周日', city:'phuket', cityName:'普吉', hasSlot:false, note:' 14:00飞回成都 · 仅早间活动' },
+];
+
+const CARD_DATA = {
+  bangkok: [
+    { id:'bkk-river', name:'湄南河精华 · 游船+Citywalk', icon:'', tag:'must', dur:'full', weather:'any', summary:'16 橙色旗船看尽曼谷，郑王庙日落+唐人街夜市收束' },
+    { id:'bkk-pattaya', name:'芭提雅一日', icon:'', tag:'must', dur:'full', weather:'sunny', summary:'真理寺+海鲜市场+实弹射击，包车往返全天' },
+    { id:'bkk-design', name:'商业设计漫步与商业考察', icon:'️', tag:'opt', dur:'full', weather:'any', summary:'The Commons通罗+Saladaeng+ChangChui飞机集市+商业考察' },
+    { id:'bkk-elephant', name:'大象保护体验', icon:'', tag:'opt', dur:'full', weather:'sunny', summary:'北碧府Somboon Legacy，不骑不表演，仅晴天出行' },
+    { id:'bkk-local', name:'本地人文深度', icon:'', tag:'opt', dur:'full', weather:'any', summary:'石龙军路+邦兰普运河+金山寺日落，避开游客的本地路线' },
+  ],
+  day11: [
+    { id:'d11-mall', name:'大型商场购物', icon:'️', tag:'rec', dur:'half', weather:'any', summary:'Siam Paragon/Central World/ICONSIAM，有行李寄存，空调舒适' },
+    { id:'d11-walk', name:'轻量商业空间漫步', icon:'️', tag:'opt', dur:'half', weather:'any', summary:'The Commons通罗+Saladaeng 轻量版，半天走完' },
+  ],
+  phuket: [
+    { id:'pkt-island', name:'跳岛出海日', icon:'⛵', tag:'must', dur:'full', weather:'sunny', summary:'攀牙湾喀斯特峰林+独木舟钻溶洞+浮潜+詹姆斯邦德岛' },
+    { id:'pkt-oldtown', name:'普吉老镇漫步', icon:'️', tag:'rec', dur:'half', weather:'any', summary:'中葡彩色骑楼街拍+Bookhemian书店+Campus Coffee手冲' },
+    { id:'pkt-beach', name:'海滩度假日', icon:'️', tag:'opt', dur:'full', weather:'sunny', summary:'卡伦海滩游泳/冲浪+酒店泳池+丛林咖啡馆+神仙半岛日落' },
+    { id:'pkt-sunset', name:'悬崖日落 · Fine Dining', icon:'', tag:'opt', dur:'full', weather:'sunny', summary:'Karon Viewpoint三湾全景+悬崖咖啡馆+神仙半岛日落+悬崖餐厅' },
+    { id:'pkt-elephant', name:'大象保护区', icon:'', tag:'opt', dur:'half', weather:'any', summary:'树冠步道观察大象，半天，晴雨通用' },
+  ]
+};
+
+// Default assignments (all draggable)
+let assignments = {
+  d1: 'bkk-river',
+  d2: 'bkk-pattaya',
+  d3: null,
+  d4: null,
+  d5: 'pkt-island',
+  d6: null,
+  d7: null,
+  d8: null,
+};
+
+let currentWeather = 'sunny';
+let currentView = 'plan';
+let currentDayIdx = 0; // for day view navigation
+
+function getCardById(id) {
+  for (const group of Object.values(CARD_DATA)) {
+    const c = group.find(c => c.id === id);
+    if (c) return c;
+  }
+  return null;
+}
+
+function getCardGroup(id) {
+  for (const [key, cards] of Object.entries(CARD_DATA)) {
+    if (cards.find(c => c.id === id)) return key;
+  }
+  return null;
+}
+
+function isCardAvailable(card) {
+  return currentWeather === 'rainy' ? card.weather !== 'sunny' : true;
+}
+
+function isCardAssigned(cardId) {
+  return Object.values(assignments).includes(cardId);
+}
+
+function getAssignedDay(cardId) {
+  for (const [dayId, cid] of Object.entries(assignments)) {
+    if (cid === cardId) return dayId;
+  }
+  return null;
+}
+
+// Pool: cards not assigned anywhere
+function getPoolCards() {
+  const pool = { bangkok: [], day11: [], phuket: [] };
+  for (const [group, cards] of Object.entries(CARD_DATA)) {
+    pool[group] = cards.filter(c => !isCardAssigned(c.id));
+  }
+  return pool;
+}
+
+// Check if a card can be assigned to a day
+function canAssign(card, day) {
+  if (!day.hasSlot) return false;
+  // City constraint
+  if (day.city === 'bangkok') {
+    if (!['bangkok', 'day11'].includes(getCardGroup(card.id))) return false;
+  } else if (day.city === 'phuket') {
+    if (getCardGroup(card.id) !== 'phuket') return false;
+  }
+  // Duration constraint for half-day slots
+  if (day.slotType === 'half' && card.dur === 'full') return false;
+  return true;
+}
+
+// ==================== VIEW SWITCHING ====================
+function showView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === ['plan','day','expense'].indexOf(view));
+  });
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('planView').classList.toggle('active', view === 'plan');
+  document.getElementById('dayView').classList.toggle('active', view === 'day');
+  document.getElementById('expenseView').classList.toggle('active', view === 'expense');
+  document.getElementById('weatherBar').classList.toggle('hidden', view === 'expense');
+
+  if (view === 'plan') renderPlanView();
+  else if (view === 'day') { renderDayView(currentDayIdx); initDayMap(); }
+  else if (view === 'expense') renderExpenseView();
+}
+
+// ==================== WEATHER ====================
+function setWeather(w) {
+  currentWeather = w;
+  document.querySelectorAll('.weather-btn').forEach(b => {
+    b.className = 'weather-btn';
+    if ((w === 'sunny' && b.textContent.includes('晴天')) ||
+        (w === 'rainy' && b.textContent.includes('雨天'))) {
+      b.classList.add(w === 'sunny' ? 'active-s' : 'active-r');
+    }
+  });
+  renderPlanView();
+  if (currentView === 'day') { renderDayView(currentDayIdx); initDayMap(); }
+}
+
+// ==================== PLAN VIEW ====================
+function renderPlanView() {
+  renderTimeline();
+  renderCardPool();
+}
+
+function renderTimeline() {
+  const container = document.getElementById('timelineDays');
+  container.innerHTML = DAYS.map(day => {
+    const assigned = assignments[day.id];
+    const card = assigned ? getCardById(assigned) : null;
+    let cityClass = day.city === 'bangkok' ? 'bangkok' : 'phuket';
+    if (!day.hasSlot) cityClass = 'return-day';
+
+    let slotHTML = '';
+    if (!day.hasSlot) {
+      slotHTML = `<div class="day-slot" style="color:var(--text-light);font-size:0.88rem"> 早饭 · 收拾行李 · 前往机场</div>`;
+    } else if (card) {
+      slotHTML = `
+        <div class="day-slot">
+          <div class="slot-card" draggable="true" data-card-id="${card.id}" data-from="slot" data-day-id="${day.id}"
+               ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
+            <span class="sc-icon">${card.icon}</span>
+            <div class="sc-info">
+              <div class="sc-name">${card.name}</div>
+              <div class="sc-meta">
+                <span class="tag-badge ${card.tag==='must'?'tag-must':card.tag==='opt'?'tag-opt':'tag-rec'}">${card.tag==='must'?'必选':card.tag==='opt'?'可选':'推荐'}</span>
+                ${card.weather==='sunny'?' ☀️':''} ${card.dur==='half'?'半天':'全天'}
+              </div>
+            </div>
+            <button class="sc-remove" onclick="removeCard('${day.id}')" title="移除卡片">✕</button>
+          </div>
+        </div>`;
+    } else {
+      slotHTML = `
+        <div class="day-slot slot-empty" data-day-id="${day.id}"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          ${day.slotType === 'half' ? ' 拖入半天卡 · 下午飞普吉' : ' 拖入卡片'}
+        </div>`;
+    }
+
+    return `
+      <div class="day-row ${cityClass}" data-day-id="${day.id}">
+        <div class="day-info">
+          <div class="day-num">Day ${day.num}</div>
+          <div class="day-date">${day.date} ${day.weekday}</div>
+          <div class="day-city ${day.city==='bangkok'?'city-bkk':'city-pkt'}">${day.cityName}</div>
+        </div>
+        ${slotHTML}
+        ${day.note ? `<div class="day-note">${day.note}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderCardPool() {
+  const container = document.getElementById('cardPool');
+  const pool = getPoolCards();
+  const groups = [
+    { key: 'bangkok', label: ' 曼谷 · 可选卡', pool: pool.bangkok },
+    { key: 'day11', label: ' 8.11 专属半天卡', pool: pool.day11 },
+    { key: 'phuket', label: ' 普吉 · 可选卡', pool: pool.phuket },
+  ];
+
+  container.innerHTML = groups.map(g => {
+    if (g.pool.length === 0) return '';
+    const cards = g.pool.map(c => {
+      const available = isCardAvailable(c);
+      const dimmed = !available ? ' dimmed' : '';
+      return `
+        <div class="pool-card${dimmed}" draggable="${available}" data-card-id="${c.id}" data-from="pool"
+             ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)"
+             title="${c.summary}">
+          <span class="pc-icon">${c.icon}</span>
+          <div class="pc-info">
+            <div class="pc-name">${c.name}</div>
+            <div class="pc-summary">${c.summary}</div>
+            <div class="pc-meta">
+              <span class="tag-badge ${c.tag==='must'?'tag-must':c.tag==='opt'?'tag-opt':'tag-rec'}">${c.tag==='must'?'必选':c.tag==='opt'?'可选':'推荐'}</span>
+              <span class="pc-weather">${c.weather==='sunny'?'☀️仅晴天':c.weather==='rainy'?'🌧️仅雨天':'☀️🌧️通用'}</span>
+              <span class="pc-weather">${c.dur==='half'?'半天':'全天'}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+    return `<div class="pool-group"><div class="pool-group-label">${g.label}</div><div class="pool-cards">${cards}</div></div>`;
+  }).join('');
+
+  // Re-bind touch handlers (pool cards are recreated)
+  bindTouchHandlers();
+}
+
+// ==================== DRAG & DROP ====================
+let dragData = null;
+
+function handleDragStart(e) {
+  const cardId = e.target.closest('[data-card-id]').dataset.cardId;
+  const from = e.target.closest('[data-card-id]').dataset.from;
+  const dayId = from === 'slot' ? e.target.closest('[data-card-id]').dataset.dayId : null;
+  dragData = { cardId, from, dayId };
+  e.target.closest('[data-card-id]').classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', cardId);
+}
+
+function handleDragEnd(e) {
+  e.target.closest('[data-card-id]')?.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  document.querySelectorAll('.drag-invalid').forEach(el => el.classList.remove('drag-invalid'));
+  dragData = null;
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const slot = e.target.closest('.slot-empty') || e.target.closest('.day-slot');
+  if (!slot || !dragData) return;
+
+  const dayId = slot.dataset.dayId;
+  const day = DAYS.find(d => d.id === dayId);
+  if (!day) return;
+
+  // Check if target slot already has a card
+  const alreadyAssigned = assignments[dayId];
+  if (alreadyAssigned && !e.target.closest('.slot-empty')) {
+    // Dropping onto an occupied slot -> swap
+  }
+
+  const card = getCardById(dragData.cardId);
+  if (canAssign(card, day)) {
+    slot.classList.add('drag-over');
+    slot.closest('.day-row')?.classList.add('drag-over');
+    slot.closest('.day-row')?.classList.remove('drag-invalid');
+  } else {
+    slot.closest('.day-row')?.classList.add('drag-invalid');
+    slot.closest('.day-row')?.classList.remove('drag-over');
+  }
+}
+
+function handleDragLeave(e) {
+  const slot = e.target.closest('.slot-empty') || e.target.closest('.day-slot');
+  if (slot) {
+    slot.classList.remove('drag-over');
+    slot.closest('.day-row')?.classList.remove('drag-over', 'drag-invalid');
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const slot = e.target.closest('.slot-empty') || e.target.closest('.day-slot');
+  if (!slot || !dragData) return;
+  slot.classList.remove('drag-over');
+  slot.closest('.day-row')?.classList.remove('drag-over', 'drag-invalid');
+
+  const targetDayId = slot.dataset.dayId;
+  const day = DAYS.find(d => d.id === targetDayId);
+  if (!day) return;
+  const card = getCardById(dragData.cardId);
+  if (!card || !canAssign(card, day)) return;
+
+  // If dropping from another slot, clear that slot first
+  if (dragData.from === 'slot' && dragData.dayId) {
+    // If target slot has a card, swap
+    const targetCard = assignments[targetDayId];
+    if (targetCard) {
+      assignments[dragData.dayId] = targetCard;
+    } else {
+      assignments[dragData.dayId] = null;
+    }
+  }
+  assignments[targetDayId] = dragData.cardId;
+  dragData = null;
+  renderPlanView();
+}
+
+function removeCard(dayId) {
+  assignments[dayId] = null;
+  renderPlanView();
+}
+
+// ==================== TOUCH DRAG (Mobile) ====================
+let touchDrag = null;
+let touchClone = null;
+
+function bindTouchHandlers() {
+  document.querySelectorAll('.pool-card[draggable="true"], .slot-card').forEach(el => {
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd);
+  });
+}
+
+function handleTouchStart(e) {
+  const card = e.target.closest('.pool-card') || e.target.closest('.slot-card');
+  if (!card) return;
+  const from = card.closest('.pool-card') ? 'pool' : 'slot';
+  const dayId = from === 'slot' ? card.dataset.dayId : null;
+  const cardId = card.dataset.cardId;
+  touchDrag = { cardId, from, dayId, startX: e.touches[0].clientX, startY: e.touches[0].clientY, moved: false, startTime: Date.now() };
+}
+
+function handleTouchMove(e) {
+  if (!touchDrag) return;
+  const dx = e.touches[0].clientX - touchDrag.startX;
+  const dy = e.touches[0].clientY - touchDrag.startY;
+  if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+    touchDrag.moved = true;
+    e.preventDefault();
+    if (!touchClone) {
+      const card = document.querySelector(`[data-card-id="${touchDrag.cardId}"]`);
+      if (card) {
+        touchClone = card.cloneNode(true);
+        touchClone.style.position = 'fixed';
+        touchClone.style.zIndex = '9999';
+        touchClone.style.opacity = '0.85';
+        touchClone.style.pointerEvents = 'none';
+        touchClone.style.width = card.offsetWidth + 'px';
+        document.body.appendChild(touchClone);
+        card.classList.add('dragging');
+      }
+    }
+    if (touchClone) {
+      touchClone.style.left = (e.touches[0].clientX - 80) + 'px';
+      touchClone.style.top = (e.touches[0].clientY - 30) + 'px';
+    }
+    // Highlight target
+    const elem = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    const slot = elem?.closest('.slot-empty') || elem?.closest('.day-slot');
+    if (slot && touchDrag) {
+      const day = DAYS.find(d => d.id === slot.dataset.dayId);
+      const card = getCardById(touchDrag.cardId);
+      if (day && card && canAssign(card, day)) {
+        slot.classList.add('drag-over');
+      }
+    }
+  }
+}
+
+function handleTouchEnd(e) {
+  if (!touchDrag) return;
+  if (touchClone) {
+    touchClone.remove();
+    touchClone = null;
+  }
+  document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+  if (touchDrag.moved) {
+    const elem = document.elementFromPoint(
+      e.changedTouches[0].clientX,
+      e.changedTouches[0].clientY
+    );
+    const slot = elem?.closest('.slot-empty') || elem?.closest('.day-slot');
+    if (slot) {
+      const day = DAYS.find(d => d.id === slot.dataset.dayId);
+      const card = getCardById(touchDrag.cardId);
+      if (day && card && canAssign(card, day)) {
+        if (touchDrag.from === 'slot' && touchDrag.dayId) {
+          const targetCard = assignments[day.id];
+          if (targetCard) {
+            assignments[touchDrag.dayId] = targetCard;
+          } else {
+            assignments[touchDrag.dayId] = null;
+          }
+        }
+        assignments[day.id] = touchDrag.cardId;
+        renderPlanView();
+      }
+    }
+  }
+  touchDrag = null;
+}
+
+// ==================== DAY VIEW ====================
+const DAY_TL_DATA = {
+  d1: {
+    am: '自然醒 ~10:00&酒店早餐&周边逛逛，感受素坤逸街区',
+    pm: '酒店泳池或周边咖啡馆&Terminal 21 逛逛&适应天气和节奏',
+    eve: '唐人街排档暴走&烤大河虾·蟹肉炒饭&猪杂胡椒汤·燕窝甜品'
+  },
+  d2: {
+    am: '10:30 Asok BTS出发&湄南河橙色旗船&ICONSIAM G层室内水上市场午餐',
+    pm: 'Wang Lang 本地市场探索&跨河轮渡→郑王庙对岸&河畔咖啡馆等日落',
+    eve: '郑王庙日落仪式&唐人街大排档夜市&可选：Asiatique摩天轮'
+  },
+  d3: {
+    am: '7:00 包车出发→芭提雅(2h)&真理寺 全木海边神殿',
+    pm: '芭提雅海鲜市场午餐&实弹射击体验&海滩漫步+咖啡馆',
+    eve: '17:30 返程曼谷&约19:30到达&素坤逸附近晚餐'
+  },
+  d4: {
+    am: 'Siam商圈购物 / 商业空间漫步&BTS出行，行李寄存酒店前台&12:00前返回酒店取行李',
+    pm: '✈️ 曼谷→普吉（约1.5h飞行）&入住卡伦海滩酒店&海滩走走+酒店泳池',
+    eve: '卡伦海滩日落&沙滩边海鲜排档&普吉第一顿海鲜'
+  },
+  d5: {
+    am: '7:30 酒店接车→码头&攀牙湾一日游出发',
+    pm: '独木舟钻溶洞&浮潜·珊瑚+热带鱼&詹姆斯邦德岛',
+    eve: '17:00返航·18:00回酒店&卡塔海滩附近海鲜排档'
+  },
+  d6: {
+    am: '10:00 他朗路骑楼街拍&中葡彩色建筑，每栋不同色&Bookhemian书店咖啡馆',
+    pm: '老镇午餐·福建面线/海南鸡饭&Campus Coffee Roasters手冲&回酒店瘫+泳池',
+    eve: '卡伦海滩日落&Fine Dining 普吉场&悬崖餐厅晚餐'
+  },
+  d7: {
+    am: '自然醒·酒店早餐&卡伦海滩游泳/冲浪&沙滩躺',
+    pm: '酒店泳池瘫&丛林咖啡馆 Three Monkeys',
+    eve: '神仙半岛日落&卡塔街上找海鲜排档'
+  },
+  d8: {
+    am: '自由安排·补漏想去的地方&老镇再逛/海滩再瘫/SPA',
+    pm: '酒店泳池 or 最后的海滩时光&收拾行李&买伴手礼',
+    eve: '卡伦最后一晚&随便找一家好吃的'
+  },
+  d9: {
+    am: '早起·酒店早餐&泳池边最后瘫一会儿&收拾行李·退房',
+    pm: '前往普吉机场（车程约1h）&✈️ 14:00 普吉→成都',
+    eve: '到家 🏠'
+  }
+};
+
+function navigateDay(dir) {
+  currentDayIdx = Math.max(0, Math.min(DAYS.length - 1, currentDayIdx + dir));
+  renderDayView(currentDayIdx);
+  initDayMap();
+}
+
+function renderDayView(idx) {
+  const day = DAYS[idx];
+  document.getElementById('dayNavTitle').textContent = `Day ${day.num} · ${day.date} ${day.weekday} · ${day.cityName}`;
+
+  const tlData = DAY_TL_DATA[day.id] || { am: '自由安排', pm: '自由安排', eve: '自由安排' };
+  const assigned = assignments[day.id];
+  const card = assigned ? getCardById(assigned) : null;
+
+  const tlEl = document.getElementById('dayTimeline');
+  tlEl.innerHTML = `
+    <div class="day-tl-title">${card ? card.icon + ' ' + card.name : ' 当日时间线'}</div>
+    ${!day.hasSlot ? `
+      <div class="day-tl-slots">
+        <div class="day-tl-slot slot-am"><div class="slot-label"> 上午</div>${(tlData.am || '').replace(/&/g,'<br>')}</div>
+        <div class="day-tl-slot slot-pm"><div class="slot-label"> 下午</div>${(tlData.pm || '').replace(/&/g,'<br>')}</div>
+        <div class="day-tl-slot slot-eve"><div class="slot-label"> 晚上</div>${(tlData.eve || '').replace(/&/g,'<br>')}</div>
+      </div>
+    ` : `
+      <div class="day-tl-slots">
+        <div class="day-tl-slot slot-am"><div class="slot-label"> 上午</div>${(tlData.am || '').replace(/&/g,'<br>')}</div>
+        <div class="day-tl-slot slot-pm"><div class="slot-label"> 下午</div>${(tlData.pm || '').replace(/&/g,'<br>')}</div>
+        <div class="day-tl-slot slot-eve"><div class="slot-label"> 晚上</div>${(tlData.eve || '').replace(/&/g,'<br>')}</div>
+      </div>
+    `}
+  `;
+}
+
+// ==================== MAP ====================
+let _map = null;
+
+const MAP_DATA = {
+  // City base maps
+  bangkok_base: {
+    center: [13.745, 100.53], zoom: 12,
+    markers: [
+      { pos:[13.7370,100.5605], icon:'start', label:'Asok BTS · 酒店', desc:'素坤逸核心区' },
+      { pos:[13.7460,100.4895], icon:'sunset', label:'郑王庙对岸日落点', desc:'Eagle Nest Bar' },
+      { pos:[13.7400,100.5080], icon:'food', label:'唐人街 Yaowarat', desc:'夜市大排档' },
+      { pos:[13.7266,100.5102], icon:'food', label:'ICONSIAM 暹罗天地', desc:'G层水上市场' },
+      { pos:[13.7188,100.5142], icon:'start', label:'Sathorn 码头', desc:'BTS Saphan Taksin' },
+    ]
+  },
+  phuket_base: {
+    center: [7.85, 98.35], zoom: 11,
+    markers: [
+      { pos:[7.820,98.300], icon:'start', label:'卡伦海滩 · 酒店', desc:'Karon Beach' },
+      { pos:[7.884,98.393], icon:'cafe', label:'普吉老镇', desc:'中葡彩色骑楼' },
+      { pos:[7.76,98.305], icon:'sunset', label:'神仙半岛', desc:'Promthep Cape日落' },
+      { pos:[7.78,98.32], icon:'food', label:'悬崖餐厅', desc:'Fine Dining' },
+    ]
+  },
+  // Card-specific routes
+  'bkk-river': {
+    routes: [
+      { coords:[[13.7188,100.5142],[13.7266,100.5102]], color:'#E67E22', dash:null, label:'过河→ICONSIAM' },
+      { coords:[[13.7266,100.5102],[13.7385,100.5025],[13.7437,100.4889],[13.7540,100.4910],[13.7584,100.4883]], color:'#E67E22', dash:null, label:'橙色旗船北上' },
+      { coords:[[13.7584,100.4883],[13.7562,100.4900]], color:'#3498DB', dash:'2,6', label:'跨河轮渡' },
+      { coords:[[13.7562,100.4900],[13.7520,100.4915],[13.7460,100.4895]], color:'#27AE60', dash:'8,6', label:'Citywalk河岸步道' },
+    ],
+    markers: [
+      { pos:[13.7584,100.4883], icon:'market', label:'Wang Lang市场' },
+      { pos:[13.7437,100.4889], icon:'culture', label:'郑王庙 Wat Arun' },
+      { pos:[13.7045,100.4890], icon:'beach', label:'Asiatique河滨夜市' },
+    ],
+    legend: [
+      { type:'solid', color:'#E67E22', label:' 橙色旗船' },
+      { type:'dotted', color:'#3498DB', label:'⛴️ 跨河轮渡' },
+      { type:'dashed', color:'#27AE60', label:' Citywalk' },
+    ]
+  },
+  'bkk-pattaya': {
+    routes: [
+      { coords:[[13.7370,100.5605],[12.9727,100.8880]], color:'#8E44AD', dash:null, label:'曼谷→芭提雅' },
+    ],
+    markers: [
+      { pos:[12.9727,100.8880], icon:'culture', label:'真理寺', desc:'全木海边神殿' },
+      { pos:[12.9380,100.8870], icon:'beach', label:'芭提雅海滩', desc:'海鲜+射击' },
+    ],
+    legend: [
+      { type:'solid', color:'#8E44AD', label:' 包车路线' },
+    ]
+  },
+  'pkt-island': {
+    routes: [
+      { coords:[[7.820,98.300],[7.85,98.32],[8.0,98.38],[8.2,98.45],[8.266,98.500]], color:'#2196A8', dash:null, label:'攀牙湾出海路线' },
+    ],
+    markers: [
+      { pos:[8.266,98.500], icon:'boat', label:'攀牙湾', desc:'海上喀斯特·独木舟·浮潜' },
+    ],
+    legend: [
+      { type:'solid', color:'#2196A8', label:' 出海路线' },
+    ]
+  },
+};
+
+const ICON_STYLES = { start:'#2D3436', market:'#E67E22', ferry:'#3498DB', cafe:'#27AE60', culture:'#8E44AD', boat:'#2196A8', sunset:'#E74C3C', food:'#E74C3C', beach:'#2196A8' };
+const ICON_EMOJI = { start:'', market:'', ferry:'⛴️', cafe:'', culture:'️', boat:'', sunset:'', food:'', beach:'️' };
+
+function makeIcon(type, num) {
+  const c = ICON_STYLES[type] || '#2D3436';
+  const e = ICON_EMOJI[type] || '';
+  const html = `<div style="background:${c};color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${num||e}</div>`;
+  return L.divIcon({ html, className:'', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
+}
+
+function smoothCoords(coords, steps) {
+  steps = steps || Math.max(8, coords.length * 3);
+  if (coords.length < 2) return coords;
+  if (coords.length === 2) {
+    const result = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      result.push([coords[0][0] + (coords[1][0]-coords[0][0])*t, coords[0][1] + (coords[1][1]-coords[0][1])*t]);
+    }
+    return result;
+  }
+  // Catmull-Rom spline
+  const result = [];
+  for (let s = 0; s < coords.length - 1; s++) {
+    const p0 = coords[Math.max(0, s-1)];
+    const p1 = coords[s];
+    const p2 = coords[s+1];
+    const p3 = coords[Math.min(coords.length-1, s+2)];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const t2 = t*t, t3 = t2*t;
+      const lat = 0.5 * ((2*p1[0]) + (-p0[0]+p2[0])*t + (2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2 + (-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3);
+      const lng = 0.5 * ((2*p1[1]) + (-p0[1]+p2[1])*t + (2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2 + (-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3);
+      result.push([lat, lng]);
+    }
+  }
+  return result;
+}
+
+function initDayMap() {
+  const container = document.getElementById('dayMapContainer');
+  if (!_map) {
+    _map = L.map('dayMapContainer').setView([13.745, 100.53], 12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OSM &copy; CARTO',
+      maxZoom: 19
+    }).addTo(_map);
+  }
+
+  // Clear previous layers
+  _map.eachLayer(layer => { if (!layer._url) _map.removeLayer(layer); });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OSM &copy; CARTO',
+    maxZoom: 19
+  }).addTo(_map);
+
+  const day = DAYS[currentDayIdx];
+  const baseKey = day.city === 'bangkok' ? 'bangkok_base' : 'phuket_base';
+  const base = MAP_DATA[baseKey];
+  const assigned = assignments[day.id];
+  const cardData = assigned ? MAP_DATA[assigned] : null;
+
+  // Render base markers
+  const allMarkers = [...(base?.markers || [])];
+  if (cardData?.markers) allMarkers.push(...cardData.markers);
+
+  allMarkers.forEach((m, i) => {
+    L.marker(m.pos, { icon: makeIcon(m.icon, i+1) })
+      .addTo(_map)
+      .bindPopup(`<strong>${m.label}</strong>${m.desc ? '<br><span style="font-size:0.82rem;color:#636E72">'+m.desc+'</span>' : ''}`);
+  });
+
+  // Render base + card routes
+  const allRoutes = [...(cardData?.routes || [])];
+  allRoutes.forEach(r => {
+    const smoothed = smoothCoords(r.coords);
+    const opts = { color: r.color, weight: r.weight || 4, opacity: 0.85 };
+    if (r.dash) opts.dashArray = r.dash;
+    L.polyline(smoothed, opts).addTo(_map).bindPopup(r.label || '');
+  });
+
+  // Legend
+  const legEl = document.getElementById('dayMapLegend');
+  const legItems = cardData?.legend || [];
+  legEl.innerHTML = legItems.map(l => {
+    let lineStyle = '';
+    if (l.type === 'dashed') lineStyle = `<span class="legend-dash" style="border-color:${l.color}"></span>`;
+    else if (l.type === 'dotted') lineStyle = `<span class="legend-dot-line" style="border-color:${l.color}"></span>`;
+    else lineStyle = `<span class="legend-line" style="background:${l.color}"></span>`;
+    return `<span>${lineStyle} ${l.label}</span>`;
+  }).join('');
+
+  const center = cardData?.center || base?.center || [13.745,100.53];
+  const zoom = cardData?.zoom || base?.zoom || 12;
+  _map.setView(center, zoom);
+  setTimeout(() => _map.invalidateSize(), 100);
+}
+
+// ==================== EXPENSE VIEW ====================
+function renderExpenseView() {
+  // Default expense data (per-person or total as the user specified)
+  const expenseRows = [
+    { cat:' 机票', item:'去程 · 成都→曼谷', budget:800, actual:null, note:'8.7 22:00' },
+    { cat:' 机票', item:'返程 · 普吉→成都', budget:1500, actual:null, note:'8.16 14:00' },
+    { cat:' 住宿', item:'曼谷 4晚 · 两间房', budget:3000, actual:null, note:'Asok BTS附近·人均¥750' },
+    { cat:' 住宿', item:'普吉 5晚 · 两间房', budget:4000, actual:null, note:'卡伦海滩·人均¥1000' },
+    { cat:' 餐饮', item:'日常餐饮 · 9天', budget:1800, actual:null, note:'人均¥200/天' },
+    { cat:' 餐饮', item:'Fine Dining × 2顿', budget:600, actual:null, note:'人均¥300×2' },
+    { cat:' 活动', item:'跳岛出海一日游', budget:400, actual:null, note:'攀牙湾' },
+    { cat:' 活动', item:'芭提雅包车+射击', budget:350, actual:null, note:'4人分摊' },
+    { cat:' 活动', item:'其他活动/门票', budget:500, actual:null, note:'大象保护/按摩等' },
+    { cat:' 交通', item:'市内交通 · 9天', budget:300, actual:null, note:'BTS/打车/Grab' },
+    { cat:' 其他', item:'购物/伴手礼/杂项', budget:500, actual:null, note:'' },
+  ];
+
+  const PER_PERSON_BUDGET = 8000;
+  let totalBudget = 0, totalActual = 0;
+
+  // Group by category
+  let html = '';
+  let lastCat = '';
+  expenseRows.forEach((r, i) => {
+    if (r.cat !== lastCat) {
+      html += `<tr><td colspan="6" class="cat-header">${r.cat}</td></tr>`;
+      lastCat = r.cat;
+    }
+    totalBudget += r.budget;
+    html += `
+      <tr>
+        <td>${r.item}</td>
+        <td style="text-align:right">¥${r.budget.toLocaleString()}</td>
+        <td><input type="number" id="exp_${i}" value="${r.actual||''}" placeholder="实际花费" onchange="updateExpenseTotals()"></td>
+        <td style="font-size:0.8rem;color:var(--text-light)">${r.note}</td>
+      </tr>`;
+  });
+
+  html += `
+    <tr class="total-row"><td> 预算合计</td><td style="text-align:right">¥${totalBudget.toLocaleString()}</td><td></td><td>人均 ¥${Math.round(totalBudget/4).toLocaleString()}</td></tr>
+    <tr class="total-row" id="actualTotalRow"><td> 实际合计</td><td></td><td id="actualTotalCell">-</td><td id="actualPerCell">-</td></tr>
+    <tr class="budget-row"><td> 人均预算</td><td style="text-align:right">¥${PER_PERSON_BUDGET.toLocaleString()}</td><td></td><td id="remainingCell"></td></tr>
+  `;
+
+  document.getElementById('expenseTable').innerHTML = `
+    <thead><tr><th>项目</th><th>人均预算</th><th>实际花费</th><th>备注</th></tr></thead>
+    <tbody>${html}</tbody>
+  `;
+
+  updateExpenseTotals();
+}
+
+function updateExpenseTotals() {
+  const inputs = document.querySelectorAll('#expenseTable input');
+  let totalActual = 0;
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) totalActual += v;
+  });
+
+  const totalBudget = 13750; // Sum of all budget items above
+  const el = document.getElementById('actualTotalCell');
+  const perEl = document.getElementById('actualPerCell');
+  const remEl = document.getElementById('remainingCell');
+
+  if (el) el.textContent = totalActual > 0 ? `¥${totalActual.toLocaleString()}` : '-';
+  if (perEl) perEl.textContent = totalActual > 0 ? `人均 ¥${Math.round(totalActual/4).toLocaleString()}` : '-';
+
+  const perRemaining = 8000 - Math.round(totalActual / 4);
+  if (remEl) {
+    remEl.textContent = totalActual > 0
+      ? `剩余 ¥${perRemaining.toLocaleString()} / 人`
+      : '预算 ¥8,000 / 人';
+    remEl.style.color = perRemaining < 0 ? 'var(--must)' : 'var(--opt)';
+  }
+
+  // Budget bar
+  const bar = document.getElementById('budgetBar');
+  const label = document.getElementById('budgetLabel');
+  if (bar && label) {
+    const pct = totalActual > 0 ? Math.round((totalActual / totalBudget) * 100) : 0;
+    bar.style.width = Math.min(pct, 100) + '%';
+    bar.classList.toggle('over', pct > 100);
+    label.textContent = totalActual > 0
+      ? `已记录花费 ¥${totalActual.toLocaleString()} / 预算 ¥${totalBudget.toLocaleString()} (${pct}%)`
+      : ' 输入实际花费后自动统计';
+  }
+}
+
+// ==================== INIT ====================
+function init() {
+  renderPlanView();
+  bindTouchHandlers();
+  document.addEventListener('dragover', e => e.preventDefault());
+  document.addEventListener('drop', e => e.preventDefault());
+}
+
+showView('plan');
+init();
+</script>
+</body>
+</html>

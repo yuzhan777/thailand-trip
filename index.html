@@ -2,156 +2,251 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thailand Trip Planner · 抽卡旅行</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Thailand Trip Planner v1.1</title>
 <style>
 :root {
   --sunny: #E67E22; --rainy: #4A90B8; --bangkok: #E67E22; --phuket: #2196A8;
   --must: #E74C3C; --opt: #27AE60; --rec: #2980B9;
   --text: #2D3436; --text-light: #636E72; --bg: #F8F9FA;
   --card-bg: #fff; --border: #e0e0e0; --radius: 16px;
+  --nav-height: 64px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, 'PingFang SC', sans-serif;
+  background: var(--bg); color: var(--text);
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 16px);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
 
 /* Hero */
 .hero {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  color: #fff; padding: 50px 20px; text-align: center; position: relative; overflow: hidden;
+  color: #fff; padding: 28px 16px 24px; text-align: center;
 }
-.hero h1 { font-size: 2.6rem; position: relative; z-index: 1; }
-.hero .subtitle { font-size: 1.1rem; opacity: 0.8; position: relative; z-index: 1; margin-top: 4px; }
-.hero .dates { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 1; }
-.hero .date-tag { background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); padding: 6px 16px; border-radius: 50px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.2); }
+.hero h1 { font-size: 1.5rem; }
+.hero .subtitle { font-size: 0.88rem; opacity: 0.8; margin-top: 2px; }
+.hero .dates { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.hero .date-tag { background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.2); }
 
-/* View Tabs */
-.view-tabs { display: flex; justify-content: center; gap: 6px; padding: 16px 20px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
-.view-tab { padding: 10px 22px; border-radius: 50px; border: 1px solid #ddd; cursor: pointer; font-size: 0.9rem; background: #fff; transition: all 0.2s; font-weight: 600; }
-.view-tab.active { background: #2D3436; color: #fff; border-color: #2D3436; }
-.view-tab:hover:not(.active) { border-color: #999; }
-
-/* Weather Bar */
-.weather-bar { display: flex; justify-content: center; gap: 10px; padding: 14px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid #eee; position: sticky; top: 57px; z-index: 98; }
-.weather-btn { padding: 8px 20px; border-radius: 50px; border: 2px solid #ddd; cursor: pointer; font-size: 0.88rem; font-weight: 600; background: #fff; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-.weather-btn.active-s { background: #FFF3E0; border-color: var(--sunny); color: var(--sunny); }
-.weather-btn.active-r { background: #EDF2F7; border-color: var(--rainy); color: var(--rainy); }
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
+  background: #fff; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around; align-items: center;
+  height: var(--nav-height);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 16px; cursor: pointer; transition: all 0.2s;
+  font-size: 0.7rem; font-weight: 600; color: var(--text-light);
+  border-radius: 12px; min-width: 60px;
+}
+.nav-item .nav-icon { font-size: 1.3rem; }
+.nav-item.active { color: #2D3436; }
+.nav-item.active::after {
+  content: ''; width: 20px; height: 3px; background: #2D3436; border-radius: 2px;
+}
 
 /* Sections */
 .section { display: none; }
 .section.active { display: block; }
-.section-inner { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.section-inner { max-width: 800px; margin: 0 auto; padding: 16px; }
 
-/* ====== PLAN VIEW ====== */
-.plan-layout { display: flex; flex-direction: column; gap: 24px; }
-
-/* Timeline (top) */
+/* Plan View */
+.plan-layout { display: flex; flex-direction: column; gap: 20px; }
 .timeline-days { display: flex; flex-direction: column; gap: 10px; }
-.day-row { display: flex; align-items: stretch; gap: 12px; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; transition: all 0.2s; }
+
+.day-row { display: flex; align-items: stretch; gap: 10px; background: #fff; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; transition: all 0.2s; }
 .day-row.bangkok { border-left: 4px solid var(--bangkok); }
 .day-row.phuket { border-left: 4px solid var(--phuket); }
 .day-row.return-day { border-left: 4px solid #999; opacity: 0.75; }
 .day-row.drag-over { border-color: #3498DB; box-shadow: 0 0 0 2px rgba(52,152,219,0.3); }
 .day-row.drag-invalid { border-color: #E74C3C; }
 
-.day-info { padding: 14px 18px; min-width: 130px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #f0f0f0; }
-.day-info .day-num { font-size: 1.1rem; font-weight: 700; }
-.day-info .day-date { font-size: 0.85rem; color: var(--text-light); }
-.day-info .day-city { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; margin-top: 4px; }
+.day-info { padding: 10px 14px; min-width: 110px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.day-info .day-num { font-size: 1rem; font-weight: 700; }
+.day-info .day-date { font-size: 0.78rem; color: var(--text-light); }
+.day-info .day-city { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; width: fit-content; }
 .city-bkk { background: #FFF3E0; color: var(--bangkok); }
 .city-pkt { background: #E0F7FA; color: var(--phuket); }
 
-.day-slot { flex: 1; padding: 12px 18px; display: flex; align-items: center; min-height: 56px; }
-.slot-empty { border: 2px dashed #ddd; border-radius: 10px; margin: 8px; color: #bbb; font-size: 0.88rem; justify-content: center; transition: all 0.2s; cursor: default; }
+/* Weather Toggle */
+.wx-toggle { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.wx-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; background: #fff; transition: all 0.2s; padding: 0; }
+.wx-btn.active-s { background: #FFF3E0; border-color: var(--sunny); }
+.wx-btn.active-r { background: #EDF2F7; border-color: var(--rainy); }
+.wx-btn:active { transform: scale(0.92); }
+
+.day-slot { flex: 1; padding: 10px 14px; display: flex; align-items: center; min-height: 52px; }
+.slot-empty {
+  border: 2px dashed #ddd; border-radius: 10px; margin: 6px; color: #bbb; font-size: 0.85rem;
+  justify-content: center; cursor: pointer; transition: all 0.2s;
+  -webkit-tap-highlight-color: rgba(52,152,219,0.1);
+}
+.slot-empty:active { border-color: #3498DB; background: rgba(52,152,219,0.04); color: #3498DB; }
 .slot-empty.drag-over { border-color: #3498DB; background: rgba(52,152,219,0.04); color: #3498DB; }
 
 .slot-card { background: #F8F9FA; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; width: 100%; border: 1px solid #e8e8e8; position: relative; }
 .slot-card .sc-icon { font-size: 1.5rem; }
-.slot-card .sc-info { flex: 1; }
-.slot-card .sc-name { font-weight: 600; font-size: 0.92rem; }
-.slot-card .sc-meta { font-size: 0.75rem; color: var(--text-light); }
-.slot-card .sc-remove { cursor: pointer; padding: 4px 8px; border-radius: 6px; border: none; background: #f0f0f0; font-size: 0.85rem; transition: all 0.2s; }
-.slot-card .sc-remove:hover { background: #FDEAEA; color: var(--must); }
+.slot-card .sc-info { flex: 1; min-width: 0; }
+.slot-card .sc-name { font-weight: 600; font-size: 0.85rem; }
+.slot-card .sc-meta { font-size: 0.72rem; color: var(--text-light); display: flex; gap: 4px; align-items: center; margin-top: 2px; }
+.slot-card .sc-remove { cursor: pointer; padding: 2px 8px; border-radius: 6px; border: none; background: #f0f0f0; font-size: 0.85rem; transition: all 0.2s; }
+.slot-card .sc-remove:active { background: #FDEAEA; color: var(--must); }
 .slot-card.dragging { opacity: 0.5; transform: scale(0.97); }
 
-.tag-badge { display: inline-block; padding: 1px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; }
+.tag-badge { display: inline-block; padding: 1px 8px; border-radius: 8px; font-size: 0.68rem; font-weight: 700; }
 .tag-must { background: #FDEAEA; color: var(--must); }
 .tag-opt { background: #E8F5E9; color: var(--opt); }
 .tag-rec { background: #E3F2FD; color: var(--rec); }
 
-.day-note { font-size: 0.75rem; color: var(--text-light); padding: 4px 12px; display: flex; align-items: center; gap: 4px; border-left: 1px solid #f0f0f0; min-width: 110px; }
+.day-note { font-size: 0.72rem; color: var(--text-light); padding: 4px 10px; display: flex; align-items: center; gap: 4px; min-width: 100px; }
 
-/* Card Pool (bottom) */
-.pool-section { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 18px 20px; }
-.pool-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.pool-group { margin-bottom: 14px; }
-.pool-group-label { font-size: 0.78rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; }
-.pool-cards { display: flex; gap: 10px; flex-wrap: wrap; }
+/* Card Pool */
+.pool-section { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; }
+.pool-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.pool-group { margin-bottom: 12px; }
+.pool-group-label { font-size: 0.74rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 6px; }
+.pool-cards { display: flex; gap: 8px; flex-wrap: wrap; }
 .pool-card {
-  background: #F8F9FA; border: 1px solid #e8e8e8; border-radius: 12px; padding: 12px 16px;
-  cursor: grab; transition: all 0.2s; display: flex; align-items: center; gap: 10px; user-select: none;
-  min-width: 200px; flex: 0 0 auto;
+  background: #F8F9FA; border: 1px solid #e8e8e8; border-radius: 10px; padding: 10px 14px;
+  cursor: grab; transition: all 0.2s; display: flex; align-items: center; gap: 8px; user-select: none;
+  min-width: 180px; flex: 0 0 auto; font-size: 0.82rem;
 }
-.pool-card:hover { border-color: #3498DB; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.pool-card:active { border-color: #3498DB; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 .pool-card.dragging { opacity: 0.4; }
-.pool-card.dimmed { opacity: 0.4; pointer-events: none; }
-.pool-card .pc-icon { font-size: 1.3rem; }
+.pool-card.dimmed { opacity: 0.35; pointer-events: none; }
+.pool-card .pc-icon { font-size: 1.2rem; }
 .pool-card .pc-info { flex: 1; min-width: 0; }
-.pool-card .pc-name { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pool-card .pc-summary { font-size: 0.72rem; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pool-card .pc-meta { display: flex; gap: 4px; margin-top: 2px; }
-.pc-weather { font-size: 0.7rem; padding: 1px 6px; border-radius: 6px; background: #f0f0f0; }
+.pool-card .pc-name { font-weight: 600; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pool-card .pc-summary { font-size: 0.7rem; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pool-card .pc-meta { display: flex; gap: 4px; margin-top: 2px; flex-wrap: wrap; }
+.pc-weather { font-size: 0.68rem; padding: 1px 6px; border-radius: 6px; background: #f0f0f0; }
 
-/* ====== DAY VIEW ====== */
-.day-nav { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 12px 0; }
-.day-nav button { padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
-.day-nav button:hover { background: #f0f0f0; }
-.day-nav .day-nav-title { font-weight: 700; font-size: 1.1rem; min-width: 220px; text-align: center; }
+/* Card Picker Popover */
+.picker-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 998;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.picker-panel {
+  background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 500px;
+  max-height: 70vh; overflow-y: auto; padding: 16px; animation: slideUp 0.2s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.picker-header .pick-title { font-weight: 700; font-size: 1rem; }
+.picker-close { padding: 6px 14px; border-radius: 20px; border: 1px solid #ddd; background: #fff; font-size: 0.85rem; cursor: pointer; }
+.pick-card {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--border); margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+}
+.pick-card:active { background: #F0F4FF; border-color: #3498DB; }
+.pick-card .pk-icon { font-size: 1.3rem; }
+.pick-card .pk-info { flex: 1; }
+.pick-card .pk-name { font-weight: 600; font-size: 0.88rem; }
+.pick-card .pk-detail { font-size: 0.74rem; color: var(--text-light); }
+.pick-empty { text-align: center; padding: 30px; color: var(--text-light); }
 
-.day-map-container { width: 100%; height: 45vh; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px; }
+/* Day View */
+.day-nav { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 0 12px; }
+.day-nav button { padding: 8px 18px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 0.88rem; transition: all 0.2s; }
+.day-nav button:active { background: #f0f0f0; }
+.day-nav .day-nav-title { font-weight: 700; font-size: 0.95rem; min-width: 200px; text-align: center; }
 
-.day-timeline { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; }
-.day-tl-title { font-weight: 700; font-size: 1rem; margin-bottom: 14px; }
-.day-tl-slots { display: flex; gap: 12px; flex-wrap: wrap; }
-.day-tl-slot { flex: 1; min-width: 160px; padding: 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.6; }
-.slot-am { background: #FFF8E1; }
-.slot-pm { background: #FFF3E0; }
-.slot-eve { background: #E8EAF6; }
-.slot-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; color: var(--text-light); letter-spacing: 0.5px; }
+.day-map-container { width: 100%; height: 40vh; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 12px; }
 
-/* Map legend */
-.day-map-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 0.8rem; color: var(--text-light); }
-.day-map-legend span { display: flex; align-items: center; gap: 4px; }
-.legend-line { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
-.legend-dash { width: 18px; height: 0; border-top: 3px dashed; display: inline-block; }
-.legend-dot-line { width: 18px; height: 0; border-top: 3px dotted; display: inline-block; }
+/* Transport Legend */
+.t-legend { display: flex; gap: 12px; flex-wrap: wrap; padding: 8px 0; font-size: 0.74rem; color: var(--text-light); margin-bottom: 4px; }
+.t-legend span { display: flex; align-items: center; gap: 4px; }
+.l-solid { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+.l-dash { width: 16px; height: 0; border-top: 3px dashed; display: inline-block; }
+.l-dot { width: 16px; height: 0; border-top: 3px dotted; display: inline-block; }
 
-/* ====== EXPENSE VIEW ====== */
-.expense-wrap { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; overflow-x: auto; }
-.expense-wrap h3 { margin-bottom: 16px; }
-.expense-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.expense-table th { background: #F8F9FA; padding: 10px 14px; text-align: left; font-size: 0.78rem; text-transform: uppercase; color: var(--text-light); border-bottom: 2px solid #e0e0e0; }
-.expense-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; }
-.expense-table input { width: 90px; padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.88rem; text-align: right; }
-.expense-table input:focus { outline: none; border-color: #3498DB; box-shadow: 0 0 0 2px rgba(52,152,219,0.15); }
-.expense-table .cat-header { font-weight: 700; background: #FAFAFA; }
-.expense-table .total-row td { font-weight: 700; border-top: 2px solid #e0e0e0; background: #F8F9FA; font-size: 0.95rem; }
-.expense-table .budget-row td { color: var(--must); }
+/* Day Timeline */
+.day-timeline { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; }
+.day-tl-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.tl-entries { display: flex; flex-direction: column; gap: 0; }
+.tl-entry {
+  display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f5f5f5; align-items: flex-start;
+  position: relative;
+}
+.tl-entry:last-child { border-bottom: none; }
+.tl-time { min-width: 48px; font-size: 0.78rem; font-weight: 600; color: var(--text-light); padding-top: 3px; }
+.tl-dot {
+  width: 10px; height: 10px; border-radius: 50%; min-width: 10px; margin-top: 6px;
+  border: 2px solid var(--border); background: #fff;
+}
+.tl-dot.walk { background: var(--opt); border-color: var(--opt); }
+.tl-dot.bts { background: #3498DB; border-color: #3498DB; }
+.tl-dot.boat { background: var(--sunny); border-color: var(--sunny); }
+.tl-dot.ferry { background: #2980B9; border-color: #2980B9; }
+.tl-dot.car { background: #8E44AD; border-color: #8E44AD; }
+.tl-dot.food { background: var(--must); border-color: var(--must); }
+.tl-content { flex: 1; min-width: 0; }
+.tl-content input, .tl-content textarea {
+  width: 100%; border: 1px solid transparent; padding: 4px 6px; border-radius: 6px;
+  font-size: 0.82rem; font-family: inherit; background: transparent; resize: none;
+  transition: border-color 0.2s;
+}
+.tl-content input:focus, .tl-content textarea:focus { outline: none; border-color: #3498DB; background: #FAFBFC; }
+.tl-content .tl-act { font-weight: 500; }
+.tl-content .tl-loc { font-size: 0.74rem; color: var(--text-light); }
+.tl-transport { font-size: 0.7rem; padding: 2px 8px; border-radius: 8px; background: #f0f0f0; white-space: nowrap; margin-top: 2px; display: inline-block; }
+.tl-delete { padding: 2px 6px; border: none; background: transparent; font-size: 1rem; cursor: pointer; color: #ccc; border-radius: 8px; }
+.tl-delete:active { color: var(--must); background: #FDEAEA; }
+
+/* Food Selector */
+.food-row { display: flex; align-items: center; gap: 6px; background: #FFF8E1; border-radius: 10px; padding: 8px 12px; margin-top: 4px; }
+.food-row select { flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.82rem; background: #fff; font-family: inherit; }
+.food-row select:focus { outline: none; border-color: var(--sunny); }
+.food-row .food-label { font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+
+/* Add Entry Button */
+.tl-add { text-align: center; padding: 8px; }
+.tl-add button { padding: 8px 20px; border-radius: 20px; border: 2px dashed #ddd; background: #fff; cursor: pointer; font-size: 0.82rem; color: var(--text-light); transition: all 0.2s; }
+.tl-add button:active { border-color: #3498DB; color: #3498DB; }
+
+/* Expense View */
+.expense-wrap { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; overflow-x: auto; }
+.expense-wrap h3 { margin-bottom: 12px; font-size: 0.95rem; }
+.expense-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.expense-table th { background: #F8F9FA; padding: 8px 8px; text-align: left; font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); border-bottom: 2px solid #e0e0e0; white-space: nowrap; }
+.expense-table td { padding: 8px 8px; border-bottom: 1px solid #f0f0f0; }
+.expense-table input, .expense-table select { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; width: 90px; font-family: inherit; }
+.expense-table input:focus, .expense-table select:focus { outline: none; border-color: #3498DB; }
+.expense-table .cat-header td { font-weight: 700; background: #FAFAFA; padding: 10px 8px; color: var(--text); }
+.expense-table .total-row td { font-weight: 700; border-top: 2px solid #e0e0e0; background: #F8F9FA; font-size: 0.88rem; }
+.expense-table .budget-row td { color: var(--must); font-weight: 700; }
 .budget-bar { height: 8px; background: #E8F5E9; border-radius: 4px; margin-top: 12px; overflow: hidden; }
 .budget-bar-fill { height: 100%; background: var(--opt); border-radius: 4px; transition: width 0.3s; }
 .budget-bar-fill.over { background: var(--must); }
+.exp-add-btn { text-align: center; padding: 12px; }
+.exp-add-btn button { padding: 10px 24px; border-radius: 20px; border: 2px dashed #ddd; background: #fff; cursor: pointer; font-size: 0.85rem; color: var(--text-light); transition: all 0.2s; }
+.exp-add-btn button:active { border-color: #3498DB; color: #3498DB; }
+.exp-del { padding: 2px 8px; border: none; background: transparent; cursor: pointer; font-size: 1rem; color: #ccc; border-radius: 6px; }
+.exp-del:active { color: var(--must); background: #FDEAEA; }
 
 /* Footer */
-.footer { text-align: center; padding: 30px; color: var(--text-light); font-size: 0.82rem; }
+.footer { text-align: center; padding: 24px; color: var(--text-light); font-size: 0.76rem; }
 
-/* Misc */
 .hidden { display: none !important; }
-@media (max-width: 768px) {
-  .hero h1 { font-size: 1.8rem; }
+
+@media (max-width: 480px) {
   .day-row { flex-wrap: wrap; }
-  .day-info { min-width: auto; flex-direction: row; gap: 8px; align-items: center; border-right: none; border-bottom: 1px solid #f0f0f0; width: 100%; }
-  .day-note { border-left: none; width: 100%; }
-  .pool-cards { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
-  .day-tl-slots { flex-direction: column; }
+  .day-info { min-width: auto; flex-direction: row; gap: 6px; align-items: center; width: 100%; padding: 8px 12px; }
+  .day-slot { width: 100%; }
+  .day-note { width: 100%; border-left: none; }
+  .pool-cards { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+  .expense-table input, .expense-table select { width: 70px; font-size: 0.75rem; }
+  .expense-wrap { padding: 12px 8px; }
+  .expense-table { font-size: 0.72rem; }
+  .expense-table th { font-size: 0.66rem; padding: 6px 4px; }
+  .expense-table td { padding: 6px 4px; }
 }
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -171,100 +266,103 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
   </div>
 </div>
 
-<!-- View Tabs -->
-<div class="view-tabs" id="viewTabs">
-  <button class="view-tab active" onclick="showView('plan')"> 规划视图</button>
-  <button class="view-tab" onclick="showView('day')"> 日视图</button>
-  <button class="view-tab" onclick="showView('expense')"> 花销视图</button>
-</div>
-
-<!-- Weather Bar -->
-<div class="weather-bar hidden" id="weatherBar">
-  <button class="weather-btn active-s" onclick="setWeather('sunny')"> 晴天模式</button>
-  <button class="weather-btn" onclick="setWeather('rainy')"> 雨天模式</button>
-</div>
-
-<!-- ====== PLAN VIEW ====== -->
+<!-- Plan View -->
 <div class="section active" id="planView">
   <div class="section-inner">
     <div class="plan-layout">
       <div class="timeline-days" id="timelineDays"></div>
       <div class="pool-section">
-        <div class="pool-title"> 可选卡池 · 拖入上方时间线</div>
+        <div class="pool-title">可选卡池 · 点击时间线空位或拖入</div>
         <div id="cardPool"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ====== DAY VIEW ====== -->
+<!-- Day View -->
 <div class="section" id="dayView">
   <div class="section-inner">
     <div class="day-nav">
-      <button onclick="navigateDay(-1)"> Prev</button>
+      <button onclick="navigateDay(-1)">Prev</button>
       <span class="day-nav-title" id="dayNavTitle">Day 1 · 8.8 曼谷</span>
-      <button onclick="navigateDay(1)"> Next</button>
+      <button onclick="navigateDay(1)">Next</button>
     </div>
     <div class="day-map-container" id="dayMapContainer"></div>
-    <div class="day-map-legend" id="dayMapLegend"></div>
+    <div class="t-legend" id="dayMapLegend"></div>
     <div class="day-timeline" id="dayTimeline"></div>
   </div>
 </div>
 
-<!-- ====== EXPENSE VIEW ====== -->
+<!-- Expense View -->
 <div class="section" id="expenseView">
   <div class="section-inner">
     <div class="expense-wrap">
-      <h3> 花销统计 · 人均预算 ¥8,000</h3>
+      <h3>花销统计 · 人均预算 ¥8,000</h3>
       <table class="expense-table" id="expenseTable"></table>
       <div class="budget-bar"><div class="budget-bar-fill" id="budgetBar"></div></div>
-      <p style="font-size:0.78rem;color:var(--text-light);margin-top:6px" id="budgetLabel"></p>
+      <p style="font-size:0.74rem;color:var(--text-light);margin-top:6px" id="budgetLabel"></p>
+      <div class="exp-add-btn"><button onclick="addExpenseEntry()">+ 新增条目</button></div>
     </div>
   </div>
 </div>
 
+<!-- Card Picker Overlay -->
+<div class="picker-overlay hidden" id="pickerOverlay" onclick="closePicker(event)">
+  <div class="picker-panel" id="pickerPanel" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="showView('plan')" id="navPlan"><span class="nav-icon">📋</span>规划</div>
+  <div class="nav-item" onclick="showView('day')" id="navDay"><span class="nav-icon">🗺️</span>日视图</div>
+  <div class="nav-item" onclick="showView('expense')" id="navExpense"><span class="nav-icon">💰</span>花销</div>
+</div>
+
 <!-- Footer -->
 <div class="footer">
-  <p>Thailand Trip Planner v1.0 · 抽卡旅行模式</p>
-  <p style="margin-top:2px">到泰国看当天天气，抽一张卡，出发！</p>
+  <p>Thailand Trip Planner v1.1 · 手机优先</p>
 </div>
 
 <script>
 // ==================== DATA MODEL ====================
 const DAYS = [
-  { id:'d1', num:1, date:'8.8',  weekday:'周六', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full', note:'' },
-  { id:'d2', num:2, date:'8.9',  weekday:'周日', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full', note:'' },
-  { id:'d3', num:3, date:'8.10', weekday:'周一', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full', note:'' },
-  { id:'d4', num:4, date:'8.11', weekday:'周二', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'half', note:' 下午飞普吉' },
-  { id:'d5', num:5, date:'8.12', weekday:'周三', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
-  { id:'d6', num:6, date:'8.13', weekday:'周四', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
-  { id:'d7', num:7, date:'8.14', weekday:'周五', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
-  { id:'d8', num:8, date:'8.15', weekday:'周六', city:'phuket', cityName:'普吉', hasSlot:true, slotType:'full', note:'' },
-  { id:'d9', num:9, date:'8.16', weekday:'周日', city:'phuket', cityName:'普吉', hasSlot:false, note:' 14:00飞回成都 · 仅早间活动' },
+  { id:'d1', num:1, date:'8.8',  weekday:'周六', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full' },
+  { id:'d2', num:2, date:'8.9',  weekday:'周日', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full' },
+  { id:'d3', num:3, date:'8.10', weekday:'周一', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'full' },
+  { id:'d4', num:4, date:'8.11', weekday:'周二', city:'bangkok', cityName:'曼谷', hasSlot:true, slotType:'half', note:'下午飞普吉' },
+  { id:'d5', num:5, date:'8.12', weekday:'周三', city:'phuket', cityName:'普吉',   hasSlot:true, slotType:'full' },
+  { id:'d6', num:6, date:'8.13', weekday:'周四', city:'phuket', cityName:'普吉',   hasSlot:true, slotType:'full' },
+  { id:'d7', num:7, date:'8.14', weekday:'周五', city:'phuket', cityName:'普吉',   hasSlot:true, slotType:'full' },
+  { id:'d8', num:8, date:'8.15', weekday:'周六', city:'phuket', cityName:'普吉',   hasSlot:true, slotType:'full' },
+  { id:'d9', num:9, date:'8.16', weekday:'周日', city:'phuket', cityName:'普吉',   hasSlot:false, note:'14:00飞回成都' },
 ];
 
 const CARD_DATA = {
   bangkok: [
-    { id:'bkk-river', name:'湄南河精华 · 游船+Citywalk', icon:'', tag:'must', dur:'full', weather:'any', summary:'16 橙色旗船看尽曼谷，郑王庙日落+唐人街夜市收束' },
-    { id:'bkk-pattaya', name:'芭提雅一日', icon:'', tag:'must', dur:'full', weather:'sunny', summary:'真理寺+海鲜市场+实弹射击，包车往返全天' },
-    { id:'bkk-design', name:'商业设计漫步与商业考察', icon:'️', tag:'opt', dur:'full', weather:'any', summary:'The Commons通罗+Saladaeng+ChangChui飞机集市+商业考察' },
-    { id:'bkk-elephant', name:'大象保护体验', icon:'', tag:'opt', dur:'full', weather:'sunny', summary:'北碧府Somboon Legacy，不骑不表演，仅晴天出行' },
-    { id:'bkk-local', name:'本地人文深度', icon:'', tag:'opt', dur:'full', weather:'any', summary:'石龙军路+邦兰普运河+金山寺日落，避开游客的本地路线' },
+    { id:'bkk-river', name:'湄南河精华 · 游船+Citywalk', icon:'🛶', tag:'must', dur:'full', weather:'any', summary:'16฿橙色旗船看尽曼谷，郑王庙日落+唐人街夜市' },
+    { id:'bkk-pattaya', name:'芭提雅一日', icon:'🌊', tag:'must', dur:'full', weather:'sunny', summary:'真理寺+海鲜市场+实弹射击，包车往返' },
+    { id:'bkk-design', name:'商业设计漫步与商业考察', icon:'🏗️', tag:'opt', dur:'full', weather:'any', summary:'The Commons通罗+Saladaeng+ChangChui飞机集市' },
+    { id:'bkk-elephant', name:'大象保护体验', icon:'🐘', tag:'opt', dur:'full', weather:'sunny', summary:'北碧府Somboon Legacy，不骑不表演' },
+    { id:'bkk-local', name:'本地人文深度', icon:'🏛️', tag:'opt', dur:'full', weather:'any', summary:'石龙军路+邦兰普运河+金山寺日落' },
   ],
   day11: [
-    { id:'d11-mall', name:'大型商场购物', icon:'️', tag:'rec', dur:'half', weather:'any', summary:'Siam Paragon/Central World/ICONSIAM，有行李寄存，空调舒适' },
-    { id:'d11-walk', name:'轻量商业空间漫步', icon:'️', tag:'opt', dur:'half', weather:'any', summary:'The Commons通罗+Saladaeng 轻量版，半天走完' },
+    { id:'d11-mall', name:'大型商场购物', icon:'🛍️', tag:'rec', dur:'half', weather:'any', summary:'Siam Paragon/Central World/ICONSIAM' },
+    { id:'d11-walk', name:'轻量商业空间漫步', icon:'🚶', tag:'opt', dur:'half', weather:'any', summary:'The Commons通罗+Saladaeng 半天' },
   ],
   phuket: [
-    { id:'pkt-island', name:'跳岛出海日', icon:'⛵', tag:'must', dur:'full', weather:'sunny', summary:'攀牙湾喀斯特峰林+独木舟钻溶洞+浮潜+詹姆斯邦德岛' },
-    { id:'pkt-oldtown', name:'普吉老镇漫步', icon:'️', tag:'rec', dur:'half', weather:'any', summary:'中葡彩色骑楼街拍+Bookhemian书店+Campus Coffee手冲' },
-    { id:'pkt-beach', name:'海滩度假日', icon:'️', tag:'opt', dur:'full', weather:'sunny', summary:'卡伦海滩游泳/冲浪+酒店泳池+丛林咖啡馆+神仙半岛日落' },
-    { id:'pkt-sunset', name:'悬崖日落 · Fine Dining', icon:'', tag:'opt', dur:'full', weather:'sunny', summary:'Karon Viewpoint三湾全景+悬崖咖啡馆+神仙半岛日落+悬崖餐厅' },
-    { id:'pkt-elephant', name:'大象保护区', icon:'', tag:'opt', dur:'half', weather:'any', summary:'树冠步道观察大象，半天，晴雨通用' },
+    { id:'pkt-island', name:'跳岛出海日', icon:'⛵', tag:'must', dur:'full', weather:'sunny', summary:'攀牙湾喀斯特峰林+独木舟钻溶洞+浮潜+邦德岛' },
+    { id:'pkt-oldtown', name:'普吉老镇漫步', icon:'🎨', tag:'rec', dur:'half', weather:'any', summary:'中葡彩色骑楼街拍+Bookhemian+Campus Coffee' },
+    { id:'pkt-beach', name:'海滩度假日', icon:'🏖️', tag:'opt', dur:'full', weather:'sunny', summary:'卡伦海滩游泳/冲浪+丛林咖啡馆+神仙半岛日落' },
+    { id:'pkt-sunset', name:'悬崖日落 · Fine Dining', icon:'🌅', tag:'opt', dur:'full', weather:'sunny', summary:'Karon Viewpoint+悬崖咖啡馆+神仙半岛日落' },
+    { id:'pkt-elephant', name:'大象保护区', icon:'🐘', tag:'opt', dur:'half', weather:'any', summary:'树冠步道观察大象，晴雨通用，半天' },
   ]
 };
 
-// Default assignments (all draggable)
+// Per-day weather state: 'sunny' or 'rainy'
+let dayWeather = {};
+DAYS.forEach(d => { dayWeather[d.id] = 'sunny'; });
+
+// Card assignments
 let assignments = {
   d1: 'bkk-river',
   d2: 'bkk-pattaya',
@@ -276,9 +374,110 @@ let assignments = {
   d8: null,
 };
 
-let currentWeather = 'sunny';
+// ==================== FOOD DATA ====================
+const FOOD_DATA = {
+  bangkok: [
+    { id:'bkk-food-tk', name:'T&K Seafood 海鲜', loc:'唐人街 Yaowarat', coords:[13.7410,100.5085], desc:'炭烤大头虾·咖哩蟹', price:'人均¥80-120' },
+    { id:'bkk-food-lek', name:'Lek & Rut Seafood', loc:'唐人街 Yaowarat', coords:[13.7412,100.5083], desc:'烤虾·鱿鱼·螃蟹', price:'人均¥80-120' },
+    { id:'bkk-food-nai', name:'Nai Ek 猪脚饭', loc:'唐人街 Yaowarat', coords:[13.7405,100.5088], desc:'米其林必比登·猪杂粿条·胡椒猪血汤', price:'人均¥30-50' },
+    { id:'bkk-food-local', name:'The Local 古法泰菜', loc:'Asok Sukhumvit 23', coords:[13.7380,100.5580], desc:'米其林推荐·酥炸鲈鱼·Panang咖哩猪肋排', price:'人均¥400-500' },
+    { id:'bkk-food-terminal', name:'Terminal 21 美食广场', loc:'Asok Terminal 21 5F', coords:[13.7375,100.5600], desc:'平价泰式·品种丰富', price:'人均¥20-40' },
+    { id:'bkk-food-rosabieng', name:'Rosa Bieng 老牌泰餐', loc:'Sukhumvit 11', coords:[13.7378,100.5565], desc:'红咖哩鸭肉·冬阴功', price:'人均¥40-60' },
+  ],
+  phuket: [
+    { id:'pkt-food-rock', name:'On The Rock 悬崖餐厅', loc:'卡伦海滩南端', coords:[7.815,98.295], desc:'日落海鲜·浪漫海景·需预订', price:'人均¥300-400' },
+    { id:'pkt-food-tukabkhao', name:'Tu Kab Khao 老宅泰菜', loc:'普吉老镇 Phangnga Rd', coords:[7.885,98.392], desc:'米其林必比登·蟹肉椰香黄咖哩', price:'人均¥150-250' },
+    { id:'pkt-food-raya', name:'Raya 百年餐厅', loc:'普吉老镇 Dibuk Rd', coords:[7.884,98.391], desc:'普吉家常菜·螃蟹咖哩·皇室曾光顾', price:'人均¥100-200' },
+    { id:'pkt-food-baansailom', name:'Baan Sailom 沙滩餐厅', loc:'卡伦海滩', coords:[7.822,98.298], desc:'海滩泰菜·性价比高·Pad Thai', price:'人均¥100-150' },
+    { id:'pkt-food-lake', name:'Karon湖海鲜排档', loc:'卡伦湖北端', coords:[7.828,98.302], desc:'本地人最爱·Phannee·Mama Jin', price:'人均¥80-120' },
+    { id:'pkt-food-gobenz', name:'Go Benz 乾粥', loc:'普吉老镇 Krabi Rd', coords:[7.883,98.390], desc:'米其林必比登·深夜食堂·猪肠猪肝', price:'人均¥30-40' },
+  ]
+};
+
+// Selected food per day
+let dayFood = {};
+DAYS.forEach(d => { dayFood[d.id] = null; });
+
+// ==================== TIMELINE ENTRIES ====================
+let timelineEntries = {
+  d1: [
+    { id:'d1-1', time:'10:00', activity:'自然醒', location:'酒店 Asok BTS', transport:null, coords:[13.7370,100.5605] },
+    { id:'d1-2', time:'10:30', activity:'酒店早餐', location:'酒店餐厅', transport:null, coords:null },
+    { id:'d1-3', time:'11:00', activity:'BTS → Sathorn 码头', location:'Saphan Taksin BTS', transport:'bts', coords:[13.7188,100.5142] },
+    { id:'d1-4', time:'12:00', activity:'橙色旗船北上 · Wang Lang市场探索', location:'Wang Lang 码头市场', transport:'boat', coords:[13.7584,100.4883] },
+    { id:'d1-5', time:'14:30', activity:'ICONSIAM G层室内水上市场 + 午餐', location:'ICONSIAM 暹罗天地', transport:'ferry', coords:[13.7266,100.5102] },
+    { id:'d1-6', time:'16:00', activity:'跨河轮渡过河 · 河畔咖啡馆等日落', location:'郑王庙对岸 Eagle Nest Bar', transport:'ferry', coords:[13.7460,100.4895] },
+    { id:'d1-7', time:'17:45', activity:'郑王庙日落仪式', location:'郑王庙 Wat Arun', transport:'walk', coords:[13.7437,100.4889] },
+    { id:'d1-8', time:'18:30', activity:'晚餐', location:'唐人街 Yaowarat', transport:'walk', coords:[13.7410,100.5080] },
+    { id:'d1-9', time:'20:00', activity:'唐人街夜市漫步 · 返回酒店', location:'唐人街 → Asok', transport:'bts', coords:null },
+  ],
+  d2: [
+    { id:'d2-1', time:'07:00', activity:'包车出发 → 芭提雅 (约2h)', location:'酒店出发', transport:'car', coords:[13.7370,100.5605] },
+    { id:'d2-2', time:'09:00', activity:'真理寺 · 全木海边神殿 (建了40年)', location:'真理寺', transport:'walk', coords:[12.9727,100.8880] },
+    { id:'d2-3', time:'12:00', activity:'芭提雅海鲜市场午餐', location:'芭提雅海鲜市场', transport:'car', coords:[12.9380,100.8870] },
+    { id:'d2-4', time:'14:00', activity:'实弹射击体验', location:'射击场', transport:'car', coords:[12.9350,100.8890] },
+    { id:'d2-5', time:'16:00', activity:'海滩漫步 + 咖啡馆', location:'芭提雅海滩', transport:'walk', coords:[12.9380,100.8875] },
+    { id:'d2-6', time:'17:30', activity:'返程曼谷 (约2h)', location:'芭提雅 → Asok', transport:'car', coords:null },
+    { id:'d2-7', time:'19:30', activity:'晚餐', location:'素坤逸附近', transport:'walk', coords:[13.7370,100.5605] },
+  ],
+  d3: [
+    { id:'d3-1', time:'09:00', activity:'自然醒 · 酒店早餐', location:'酒店', transport:null, coords:null },
+    { id:'d3-2', time:'10:30', activity:'自由安排（从可选卡中选一张）', location:'曼谷', transport:null, coords:null },
+    { id:'d3-3', time:'18:00', activity:'晚餐', location:'曼谷', transport:null, coords:null },
+  ],
+  d4: [
+    { id:'d4-1', time:'09:00', activity:'酒店早餐 · 退房寄存行李', location:'酒店 Asok', transport:null, coords:null },
+    { id:'d4-2', time:'10:00', activity:'Siam商圈购物 / 商业空间漫步', location:'Siam / Central World', transport:'bts', coords:[13.7462,100.5322] },
+    { id:'d4-3', time:'12:00', activity:'返回酒店取行李', location:'Asok 酒店', transport:'bts', coords:null },
+    { id:'d4-4', time:'13:00', activity:'前往机场', location:'曼谷机场', transport:'car', coords:null },
+    { id:'d4-5', time:'15:00', activity:'✈️ 曼谷 → 普吉 (约1.5h)', location:'飞行中', transport:null, coords:null },
+    { id:'d4-6', time:'17:00', activity:'入住卡伦海滩酒店 · 海滩走走', location:'卡伦海滩', transport:'car', coords:[7.820,98.300] },
+    { id:'d4-7', time:'18:00', activity:'晚餐 · 普吉第一顿海鲜', location:'卡伦海滩附近', transport:'walk', coords:null },
+  ],
+  d5: [
+    { id:'d5-1', time:'07:30', activity:'酒店接车 → 码头', location:'码头', transport:'car', coords:null },
+    { id:'d5-2', time:'08:30', activity:'攀牙湾一日游出发', location:'攀牙湾', transport:'boat', coords:[8.266,98.500] },
+    { id:'d5-3', time:'10:00', activity:'独木舟钻溶洞', location:'攀牙湾溶洞', transport:'boat', coords:[8.260,98.495] },
+    { id:'d5-4', time:'12:00', activity:'船上午餐 · 浮潜 · 珊瑚+热带鱼', location:'攀牙湾海域', transport:'boat', coords:[8.200,98.450] },
+    { id:'d5-5', time:'14:30', activity:'詹姆斯邦德岛', location:'邦德岛', transport:'boat', coords:[8.275,98.500] },
+    { id:'d5-6', time:'17:00', activity:'返航 · 回酒店', location:'卡伦海滩', transport:'boat', coords:[7.820,98.300] },
+    { id:'d5-7', time:'18:30', activity:'晚餐', location:'卡塔/卡伦附近', transport:'walk', coords:null },
+  ],
+  d6: [
+    { id:'d6-1', time:'09:00', activity:'酒店早餐', location:'酒店', transport:null, coords:null },
+    { id:'d6-2', time:'10:00', activity:'他朗路骑楼街拍 · 中葡彩色建筑', location:'普吉老镇 Thalang Rd', transport:'car', coords:[7.885,98.393] },
+    { id:'d6-3', time:'11:30', activity:'Bookhemian 书店咖啡馆', location:'普吉老镇', transport:'walk', coords:[7.8845,98.3925] },
+    { id:'d6-4', time:'12:30', activity:'老镇午餐 · 福建面线/海南鸡饭', location:'普吉老镇', transport:'walk', coords:[7.884,98.392] },
+    { id:'d6-5', time:'14:00', activity:'Campus Coffee Roasters 手冲', location:'普吉老镇', transport:'walk', coords:[7.8855,98.3935] },
+    { id:'d6-6', time:'15:30', activity:'回酒店 · 泳池瘫', location:'卡伦海滩酒店', transport:'car', coords:[7.820,98.300] },
+    { id:'d6-7', time:'17:30', activity:'卡伦海滩日落', location:'卡伦海滩', transport:'walk', coords:[7.822,98.298] },
+    { id:'d6-8', time:'18:30', activity:'Fine Dining 晚餐', location:'悬崖餐厅', transport:'car', coords:[7.815,98.295] },
+  ],
+  d7: [
+    { id:'d7-1', time:'09:00', activity:'自然醒 · 酒店早餐', location:'酒店', transport:null, coords:null },
+    { id:'d7-2', time:'10:00', activity:'卡伦海滩游泳/冲浪 · 沙滩躺', location:'卡伦海滩', transport:'walk', coords:[7.822,98.298] },
+    { id:'d7-3', time:'13:00', activity:'酒店泳池瘫', location:'酒店泳池', transport:null, coords:null },
+    { id:'d7-4', time:'15:00', activity:'丛林咖啡馆 Three Monkeys', location:'Three Monkeys Cafe', transport:'car', coords:[7.860,98.330] },
+    { id:'d7-5', time:'17:30', activity:'神仙半岛日落', location:'Promthep Cape', transport:'car', coords:[7.760,98.305] },
+    { id:'d7-6', time:'18:30', activity:'晚餐', location:'卡塔街上', transport:'car', coords:[7.820,98.305] },
+  ],
+  d8: [
+    { id:'d8-1', time:'09:00', activity:'自由安排 · 补漏想去的地方', location:'普吉', transport:null, coords:null },
+    { id:'d8-2', time:'14:00', activity:'酒店泳池 or 最后的海滩时光 · 买伴手礼', location:'卡伦海滩', transport:null, coords:[7.820,98.300] },
+    { id:'d8-3', time:'18:00', activity:'晚餐 · 最后一晚', location:'卡伦附近', transport:'walk', coords:null },
+  ],
+  d9: [
+    { id:'d9-1', time:'08:00', activity:'早起 · 酒店早餐', location:'酒店', transport:null, coords:null },
+    { id:'d9-2', time:'09:00', activity:'泳池边最后瘫一会儿 · 收拾行李 · 退房', location:'酒店', transport:null, coords:null },
+    { id:'d9-3', time:'11:00', activity:'前往普吉机场 (车程约1h)', location:'普吉机场', transport:'car', coords:[8.1132,98.3069] },
+    { id:'d9-4', time:'14:00', activity:'✈️ 普吉 → 成都', location:'飞行中', transport:null, coords:null },
+  ]
+};
+
+// ==================== STATE ====================
 let currentView = 'plan';
-let currentDayIdx = 0; // for day view navigation
+let currentDayIdx = 0;
+let pickerDayId = null;
 
 function getCardById(id) {
   for (const group of Object.values(CARD_DATA)) {
@@ -295,40 +494,22 @@ function getCardGroup(id) {
   return null;
 }
 
-function isCardAvailable(card) {
-  return currentWeather === 'rainy' ? card.weather !== 'sunny' : true;
+function isCardAvailable(card, dayId) {
+  const wx = dayWeather[dayId] || 'sunny';
+  return wx === 'rainy' ? card.weather !== 'sunny' : true;
 }
 
 function isCardAssigned(cardId) {
   return Object.values(assignments).includes(cardId);
 }
 
-function getAssignedDay(cardId) {
-  for (const [dayId, cid] of Object.entries(assignments)) {
-    if (cid === cardId) return dayId;
-  }
-  return null;
-}
-
-// Pool: cards not assigned anywhere
-function getPoolCards() {
-  const pool = { bangkok: [], day11: [], phuket: [] };
-  for (const [group, cards] of Object.entries(CARD_DATA)) {
-    pool[group] = cards.filter(c => !isCardAssigned(c.id));
-  }
-  return pool;
-}
-
-// Check if a card can be assigned to a day
 function canAssign(card, day) {
   if (!day.hasSlot) return false;
-  // City constraint
   if (day.city === 'bangkok') {
-    if (!['bangkok', 'day11'].includes(getCardGroup(card.id))) return false;
+    if (!['bangkok','day11'].includes(getCardGroup(card.id))) return false;
   } else if (day.city === 'phuket') {
     if (getCardGroup(card.id) !== 'phuket') return false;
   }
-  // Duration constraint for half-day slots
   if (day.slotType === 'half' && card.dur === 'full') return false;
   return true;
 }
@@ -336,35 +517,101 @@ function canAssign(card, day) {
 // ==================== VIEW SWITCHING ====================
 function showView(view) {
   currentView = view;
-  document.querySelectorAll('.view-tab').forEach((t, i) => {
-    t.classList.toggle('active', i === ['plan','day','expense'].indexOf(view));
-  });
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('planView').classList.toggle('active', view === 'plan');
   document.getElementById('dayView').classList.toggle('active', view === 'day');
   document.getElementById('expenseView').classList.toggle('active', view === 'expense');
-  document.getElementById('weatherBar').classList.toggle('hidden', view === 'expense');
-
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.toggle('active', ['plan','day','expense'][i] === view);
+  });
   if (view === 'plan') renderPlanView();
   else if (view === 'day') { renderDayView(currentDayIdx); initDayMap(); }
   else if (view === 'expense') renderExpenseView();
 }
 
-// ==================== WEATHER ====================
-function setWeather(w) {
-  currentWeather = w;
-  document.querySelectorAll('.weather-btn').forEach(b => {
-    b.className = 'weather-btn';
-    if ((w === 'sunny' && b.textContent.includes('晴天')) ||
-        (w === 'rainy' && b.textContent.includes('雨天'))) {
-      b.classList.add(w === 'sunny' ? 'active-s' : 'active-r');
+// ==================== PLAN VIEW ====================
+function toggleDayWeather(dayId) {
+  dayWeather[dayId] = dayWeather[dayId] === 'sunny' ? 'rainy' : 'sunny';
+  // If current assignment is incompatible with new weather, clear it
+  const assigned = assignments[dayId];
+  if (assigned) {
+    const card = getCardById(assigned);
+    if (card && !isCardAvailable(card, dayId)) {
+      assignments[dayId] = null;
     }
-  });
+  }
   renderPlanView();
-  if (currentView === 'day') { renderDayView(currentDayIdx); initDayMap(); }
 }
 
-// ==================== PLAN VIEW ====================
+function openPicker(dayId) {
+  const day = DAYS.find(d => d.id === dayId);
+  if (!day || !day.hasSlot) return;
+  pickerDayId = dayId;
+  const panel = document.getElementById('pickerPanel');
+  const groupKey = day.city === 'bangkok' ? 'bangkok' : 'phuket';
+  let available = [...(CARD_DATA[groupKey] || [])];
+  if (day.city === 'bangkok' && day.slotType === 'half') {
+    available = [...(CARD_DATA.day11 || [])];
+  } else if (day.city === 'bangkok') {
+    available = [...(CARD_DATA.bangkok || [])];
+  }
+
+  const wx = dayWeather[dayId] || 'sunny';
+  const filtered = available.filter(c => {
+    if (!canAssign(c, day)) return false;
+    if (wx === 'rainy' && c.weather === 'sunny') return false;
+    return true;
+  });
+
+  const currentId = assignments[dayId];
+  panel.innerHTML = `
+    <div class="picker-header">
+      <span class="pick-title">Day ${day.num} · ${day.date} · ${wx==='sunny'?'☀️':'🌧️'} ${day.cityName}</span>
+      <button class="picker-close" onclick="closePicker()">✕</button>
+    </div>
+    <div style="margin-bottom:8px">
+      <button style="padding:6px 16px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:0.8rem;margin-right:6px" onclick="toggleDayWeather('${dayId}');openPicker('${dayId}')">
+        切换 ${wx==='sunny'?'🌧️ 雨天':'☀️ 晴天'}
+      </button>
+      ${currentId ? `<button style="padding:6px 16px;border-radius:20px;border:1px solid #FDEAEA;background:#fff;cursor:pointer;font-size:0.8rem;color:var(--must)" onclick="removeCard('${dayId}');closePicker()">移除当前卡片</button>` : ''}
+    </div>
+    ${filtered.length === 0 ? '<div class="pick-empty">😕 该天气下无可选卡片</div>' : filtered.map(c => `
+      <div class="pick-card" onclick="pickCard('${dayId}','${c.id}')">
+        <span class="pk-icon">${c.icon}</span>
+        <div class="pk-info">
+          <div class="pk-name">${c.name} <span class="tag-badge ${c.tag==='must'?'tag-must':c.tag==='opt'?'tag-opt':'tag-rec'}">${c.tag==='must'?'必选':c.tag==='opt'?'可选':'推荐'}</span></div>
+          <div class="pk-detail">${c.summary}</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  document.getElementById('pickerOverlay').classList.remove('hidden');
+}
+
+function pickCard(dayId, cardId) {
+  // If card is already assigned elsewhere, swap
+  const prevDay = Object.keys(assignments).find(k => assignments[k] === cardId);
+  if (prevDay) {
+    const currentCard = assignments[dayId];
+    assignments[prevDay] = currentCard || null;
+  }
+  assignments[dayId] = cardId;
+  closePicker();
+  renderPlanView();
+}
+
+function closePicker(e) {
+  if (e && e.target !== document.getElementById('pickerOverlay')) return;
+  document.getElementById('pickerOverlay').classList.add('hidden');
+  pickerDayId = null;
+  renderPlanView();
+}
+
+function removeCard(dayId) {
+  assignments[dayId] = null;
+  renderPlanView();
+}
+
 function renderPlanView() {
   renderTimeline();
   renderCardPool();
@@ -377,15 +624,16 @@ function renderTimeline() {
     const card = assigned ? getCardById(assigned) : null;
     let cityClass = day.city === 'bangkok' ? 'bangkok' : 'phuket';
     if (!day.hasSlot) cityClass = 'return-day';
+    const wx = dayWeather[day.id] || 'sunny';
 
     let slotHTML = '';
     if (!day.hasSlot) {
-      slotHTML = `<div class="day-slot" style="color:var(--text-light);font-size:0.88rem"> 早饭 · 收拾行李 · 前往机场</div>`;
+      slotHTML = `<div class="day-slot" style="color:var(--text-light);font-size:0.85rem">早饭 · 收拾行李 · 前往机场</div>`;
     } else if (card) {
       slotHTML = `
-        <div class="day-slot">
+        <div class="day-slot" style="cursor:pointer" onclick="openPicker('${day.id}')">
           <div class="slot-card" draggable="true" data-card-id="${card.id}" data-from="slot" data-day-id="${day.id}"
-               ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
+               ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)" onclick="event.stopPropagation();openPicker('${day.id}')">
             <span class="sc-icon">${card.icon}</span>
             <div class="sc-info">
               <div class="sc-name">${card.name}</div>
@@ -394,14 +642,15 @@ function renderTimeline() {
                 ${card.weather==='sunny'?' ☀️':''} ${card.dur==='half'?'半天':'全天'}
               </div>
             </div>
-            <button class="sc-remove" onclick="removeCard('${day.id}')" title="移除卡片">✕</button>
+            <button class="sc-remove" onclick="event.stopPropagation();removeCard('${day.id}')">✕</button>
           </div>
         </div>`;
     } else {
       slotHTML = `
         <div class="day-slot slot-empty" data-day-id="${day.id}"
+             onclick="openPicker('${day.id}')"
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-          ${day.slotType === 'half' ? ' 拖入半天卡 · 下午飞普吉' : ' 拖入卡片'}
+          ${day.slotType === 'half' ? '点击选择半天卡 · 下午飞普吉' : '点击选择卡片'}
         </div>`;
     }
 
@@ -411,6 +660,10 @@ function renderTimeline() {
           <div class="day-num">Day ${day.num}</div>
           <div class="day-date">${day.date} ${day.weekday}</div>
           <div class="day-city ${day.city==='bangkok'?'city-bkk':'city-pkt'}">${day.cityName}</div>
+          ${day.hasSlot ? `
+          <div class="wx-toggle">
+            <button class="wx-btn ${wx==='sunny'?'active-s':'active-r'}" onclick="event.stopPropagation();toggleDayWeather('${day.id}')" title="${wx==='sunny'?'晴天':'雨天'}">${wx==='sunny'?'☀️':'🌧️'}</button>
+          </div>` : ''}
         </div>
         ${slotHTML}
         ${day.note ? `<div class="day-note">${day.note}</div>` : ''}
@@ -420,22 +673,34 @@ function renderTimeline() {
 
 function renderCardPool() {
   const container = document.getElementById('cardPool');
-  const pool = getPoolCards();
+  // Show all unassigned cards
+  const poolData = { bangkok: [], day11: [], phuket: [] };
+  for (const [group, cards] of Object.entries(CARD_DATA)) {
+    poolData[group] = cards.filter(c => !isCardAssigned(c.id));
+  }
+
   const groups = [
-    { key: 'bangkok', label: ' 曼谷 · 可选卡', pool: pool.bangkok },
-    { key: 'day11', label: ' 8.11 专属半天卡', pool: pool.day11 },
-    { key: 'phuket', label: ' 普吉 · 可选卡', pool: pool.phuket },
+    { key:'bangkok', label:'曼谷 · 可选卡', pool: poolData.bangkok },
+    { key:'day11', label:'8.11 专属半天卡', pool: poolData.day11 },
+    { key:'phuket', label:'普吉 · 可选卡', pool: poolData.phuket },
   ];
 
   container.innerHTML = groups.map(g => {
     if (g.pool.length === 0) return '';
-    const cards = g.pool.map(c => {
-      const available = isCardAvailable(c);
-      const dimmed = !available ? ' dimmed' : '';
-      return `
-        <div class="pool-card${dimmed}" draggable="${available}" data-card-id="${c.id}" data-from="pool"
-             ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)"
-             title="${c.summary}">
+    return `<div class="pool-group">
+      <div class="pool-group-label">${g.label}</div>
+      <div class="pool-cards">${g.pool.map(c => {
+        let dimmed = false;
+        // Dim if no day has the right weather for this card
+        const anyDayGood = DAYS.some(d => {
+          if (!d.hasSlot) return false;
+          if (isCardAssigned(c.id) && assignments[d.id] !== c.id) return false;
+          if (!canAssign(c, d)) return false;
+          return isCardAvailable(c, d.id);
+        });
+        dimmed = !anyDayGood;
+        return `<div class="pool-card${dimmed?' dimmed':''}" draggable="${!dimmed}" data-card-id="${c.id}" data-from="pool"
+                   ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
           <span class="pc-icon">${c.icon}</span>
           <div class="pc-info">
             <div class="pc-name">${c.name}</div>
@@ -447,11 +712,10 @@ function renderCardPool() {
             </div>
           </div>
         </div>`;
-    }).join('');
-    return `<div class="pool-group"><div class="pool-group-label">${g.label}</div><div class="pool-cards">${cards}</div></div>`;
+      }).join('')}</div>
+    </div>`;
   }).join('');
 
-  // Re-bind touch handlers (pool cards are recreated)
   bindTouchHandlers();
 }
 
@@ -459,17 +723,19 @@ function renderCardPool() {
 let dragData = null;
 
 function handleDragStart(e) {
-  const cardId = e.target.closest('[data-card-id]').dataset.cardId;
-  const from = e.target.closest('[data-card-id]').dataset.from;
-  const dayId = from === 'slot' ? e.target.closest('[data-card-id]').dataset.dayId : null;
+  const el = e.target.closest('[data-card-id]');
+  if (!el) return;
+  const cardId = el.dataset.cardId;
+  const from = el.dataset.from;
+  const dayId = from === 'slot' ? el.dataset.dayId : null;
   dragData = { cardId, from, dayId };
-  e.target.closest('[data-card-id]').classList.add('dragging');
+  el.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', cardId);
 }
 
 function handleDragEnd(e) {
-  e.target.closest('[data-card-id]')?.classList.remove('dragging');
+  document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
   document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
   document.querySelectorAll('.drag-invalid').forEach(el => el.classList.remove('drag-invalid'));
   dragData = null;
@@ -480,25 +746,15 @@ function handleDragOver(e) {
   e.dataTransfer.dropEffect = 'move';
   const slot = e.target.closest('.slot-empty') || e.target.closest('.day-slot');
   if (!slot || !dragData) return;
-
   const dayId = slot.dataset.dayId;
   const day = DAYS.find(d => d.id === dayId);
   if (!day) return;
-
-  // Check if target slot already has a card
-  const alreadyAssigned = assignments[dayId];
-  if (alreadyAssigned && !e.target.closest('.slot-empty')) {
-    // Dropping onto an occupied slot -> swap
-  }
-
   const card = getCardById(dragData.cardId);
-  if (canAssign(card, day)) {
+  if (card && canAssign(card, day) && isCardAvailable(card, dayId)) {
     slot.classList.add('drag-over');
     slot.closest('.day-row')?.classList.add('drag-over');
-    slot.closest('.day-row')?.classList.remove('drag-invalid');
   } else {
     slot.closest('.day-row')?.classList.add('drag-invalid');
-    slot.closest('.day-row')?.classList.remove('drag-over');
   }
 }
 
@@ -506,7 +762,7 @@ function handleDragLeave(e) {
   const slot = e.target.closest('.slot-empty') || e.target.closest('.day-slot');
   if (slot) {
     slot.classList.remove('drag-over');
-    slot.closest('.day-row')?.classList.remove('drag-over', 'drag-invalid');
+    slot.closest('.day-row')?.classList.remove('drag-over','drag-invalid');
   }
 }
 
@@ -515,42 +771,31 @@ function handleDrop(e) {
   const slot = e.target.closest('.slot-empty') || e.target.closest('.day-slot');
   if (!slot || !dragData) return;
   slot.classList.remove('drag-over');
-  slot.closest('.day-row')?.classList.remove('drag-over', 'drag-invalid');
+  slot.closest('.day-row')?.classList.remove('drag-over','drag-invalid');
 
   const targetDayId = slot.dataset.dayId;
   const day = DAYS.find(d => d.id === targetDayId);
   if (!day) return;
   const card = getCardById(dragData.cardId);
-  if (!card || !canAssign(card, day)) return;
+  if (!card || !canAssign(card, day) || !isCardAvailable(card, targetDayId)) return;
 
-  // If dropping from another slot, clear that slot first
   if (dragData.from === 'slot' && dragData.dayId) {
-    // If target slot has a card, swap
     const targetCard = assignments[targetDayId];
-    if (targetCard) {
-      assignments[dragData.dayId] = targetCard;
-    } else {
-      assignments[dragData.dayId] = null;
-    }
+    if (targetCard) { assignments[dragData.dayId] = targetCard; }
+    else { assignments[dragData.dayId] = null; }
   }
   assignments[targetDayId] = dragData.cardId;
   dragData = null;
   renderPlanView();
 }
 
-function removeCard(dayId) {
-  assignments[dayId] = null;
-  renderPlanView();
-}
-
-// ==================== TOUCH DRAG (Mobile) ====================
-let touchDrag = null;
-let touchClone = null;
+// ==================== TOUCH DRAG ====================
+let touchDrag = null, touchClone = null;
 
 function bindTouchHandlers() {
   document.querySelectorAll('.pool-card[draggable="true"], .slot-card').forEach(el => {
-    el.addEventListener('touchstart', handleTouchStart, { passive: false });
-    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchstart', handleTouchStart, {passive:false});
+    el.addEventListener('touchmove', handleTouchMove, {passive:false});
     el.addEventListener('touchend', handleTouchEnd);
   });
 }
@@ -559,9 +804,7 @@ function handleTouchStart(e) {
   const card = e.target.closest('.pool-card') || e.target.closest('.slot-card');
   if (!card) return;
   const from = card.closest('.pool-card') ? 'pool' : 'slot';
-  const dayId = from === 'slot' ? card.dataset.dayId : null;
-  const cardId = card.dataset.cardId;
-  touchDrag = { cardId, from, dayId, startX: e.touches[0].clientX, startY: e.touches[0].clientY, moved: false, startTime: Date.now() };
+  touchDrag = { cardId: card.dataset.cardId, from, dayId: from==='slot'?card.dataset.dayId:null, startX:e.touches[0].clientX, startY:e.touches[0].clientY, moved:false };
 }
 
 function handleTouchMove(e) {
@@ -569,16 +812,12 @@ function handleTouchMove(e) {
   const dx = e.touches[0].clientX - touchDrag.startX;
   const dy = e.touches[0].clientY - touchDrag.startY;
   if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-    touchDrag.moved = true;
-    e.preventDefault();
+    touchDrag.moved = true; e.preventDefault();
     if (!touchClone) {
       const card = document.querySelector(`[data-card-id="${touchDrag.cardId}"]`);
       if (card) {
         touchClone = card.cloneNode(true);
-        touchClone.style.position = 'fixed';
-        touchClone.style.zIndex = '9999';
-        touchClone.style.opacity = '0.85';
-        touchClone.style.pointerEvents = 'none';
+        touchClone.style.cssText = 'position:fixed;z-index:9999;opacity:0.85;pointer-events:none;';
         touchClone.style.width = card.offsetWidth + 'px';
         document.body.appendChild(touchClone);
         card.classList.add('dragging');
@@ -588,48 +827,31 @@ function handleTouchMove(e) {
       touchClone.style.left = (e.touches[0].clientX - 80) + 'px';
       touchClone.style.top = (e.touches[0].clientY - 30) + 'px';
     }
-    // Highlight target
-    const elem = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
     document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    const elem = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
     const slot = elem?.closest('.slot-empty') || elem?.closest('.day-slot');
     if (slot && touchDrag) {
       const day = DAYS.find(d => d.id === slot.dataset.dayId);
       const card = getCardById(touchDrag.cardId);
-      if (day && card && canAssign(card, day)) {
-        slot.classList.add('drag-over');
-      }
+      if (day && card && canAssign(card,day) && isCardAvailable(card,day.id)) slot.classList.add('drag-over');
     }
   }
 }
 
 function handleTouchEnd(e) {
   if (!touchDrag) return;
-  if (touchClone) {
-    touchClone.remove();
-    touchClone = null;
-  }
+  if (touchClone) { touchClone.remove(); touchClone = null; }
   document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
   document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-
   if (touchDrag.moved) {
-    const elem = document.elementFromPoint(
-      e.changedTouches[0].clientX,
-      e.changedTouches[0].clientY
-    );
+    const elem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
     const slot = elem?.closest('.slot-empty') || elem?.closest('.day-slot');
     if (slot) {
       const day = DAYS.find(d => d.id === slot.dataset.dayId);
       const card = getCardById(touchDrag.cardId);
-      if (day && card && canAssign(card, day)) {
-        if (touchDrag.from === 'slot' && touchDrag.dayId) {
-          const targetCard = assignments[day.id];
-          if (targetCard) {
-            assignments[touchDrag.dayId] = targetCard;
-          } else {
-            assignments[touchDrag.dayId] = null;
-          }
-        }
-        assignments[day.id] = touchDrag.cardId;
+      if (day && card && canAssign(card,day) && isCardAvailable(card,day.id)) {
+        if (touchDrag.from==='slot'&&touchDrag.dayId){const tc=assignments[day.id];if(tc)assignments[touchDrag.dayId]=tc;else assignments[touchDrag.dayId]=null;}
+        assignments[day.id]=touchDrag.cardId;
         renderPlanView();
       }
     }
@@ -638,54 +860,6 @@ function handleTouchEnd(e) {
 }
 
 // ==================== DAY VIEW ====================
-const DAY_TL_DATA = {
-  d1: {
-    am: '自然醒 ~10:00&酒店早餐&周边逛逛，感受素坤逸街区',
-    pm: '酒店泳池或周边咖啡馆&Terminal 21 逛逛&适应天气和节奏',
-    eve: '唐人街排档暴走&烤大河虾·蟹肉炒饭&猪杂胡椒汤·燕窝甜品'
-  },
-  d2: {
-    am: '10:30 Asok BTS出发&湄南河橙色旗船&ICONSIAM G层室内水上市场午餐',
-    pm: 'Wang Lang 本地市场探索&跨河轮渡→郑王庙对岸&河畔咖啡馆等日落',
-    eve: '郑王庙日落仪式&唐人街大排档夜市&可选：Asiatique摩天轮'
-  },
-  d3: {
-    am: '7:00 包车出发→芭提雅(2h)&真理寺 全木海边神殿',
-    pm: '芭提雅海鲜市场午餐&实弹射击体验&海滩漫步+咖啡馆',
-    eve: '17:30 返程曼谷&约19:30到达&素坤逸附近晚餐'
-  },
-  d4: {
-    am: 'Siam商圈购物 / 商业空间漫步&BTS出行，行李寄存酒店前台&12:00前返回酒店取行李',
-    pm: '✈️ 曼谷→普吉（约1.5h飞行）&入住卡伦海滩酒店&海滩走走+酒店泳池',
-    eve: '卡伦海滩日落&沙滩边海鲜排档&普吉第一顿海鲜'
-  },
-  d5: {
-    am: '7:30 酒店接车→码头&攀牙湾一日游出发',
-    pm: '独木舟钻溶洞&浮潜·珊瑚+热带鱼&詹姆斯邦德岛',
-    eve: '17:00返航·18:00回酒店&卡塔海滩附近海鲜排档'
-  },
-  d6: {
-    am: '10:00 他朗路骑楼街拍&中葡彩色建筑，每栋不同色&Bookhemian书店咖啡馆',
-    pm: '老镇午餐·福建面线/海南鸡饭&Campus Coffee Roasters手冲&回酒店瘫+泳池',
-    eve: '卡伦海滩日落&Fine Dining 普吉场&悬崖餐厅晚餐'
-  },
-  d7: {
-    am: '自然醒·酒店早餐&卡伦海滩游泳/冲浪&沙滩躺',
-    pm: '酒店泳池瘫&丛林咖啡馆 Three Monkeys',
-    eve: '神仙半岛日落&卡塔街上找海鲜排档'
-  },
-  d8: {
-    am: '自由安排·补漏想去的地方&老镇再逛/海滩再瘫/SPA',
-    pm: '酒店泳池 or 最后的海滩时光&收拾行李&买伴手礼',
-    eve: '卡伦最后一晚&随便找一家好吃的'
-  },
-  d9: {
-    am: '早起·酒店早餐&泳池边最后瘫一会儿&收拾行李·退房',
-    pm: '前往普吉机场（车程约1h）&✈️ 14:00 普吉→成都',
-    eve: '到家 🏠'
-  }
-};
-
 function navigateDay(dir) {
   currentDayIdx = Math.max(0, Math.min(DAYS.length - 1, currentDayIdx + dir));
   renderDayView(currentDayIdx);
@@ -694,107 +868,127 @@ function navigateDay(dir) {
 
 function renderDayView(idx) {
   const day = DAYS[idx];
-  document.getElementById('dayNavTitle').textContent = `Day ${day.num} · ${day.date} ${day.weekday} · ${day.cityName}`;
+  const wx = dayWeather[day.id] || 'sunny';
+  document.getElementById('dayNavTitle').textContent = `Day ${day.num} · ${day.date} ${day.weekday} · ${wx==='sunny'?'☀️':'🌧️'} ${day.cityName}`;
 
-  const tlData = DAY_TL_DATA[day.id] || { am: '自由安排', pm: '自由安排', eve: '自由安排' };
-  const assigned = assignments[day.id];
-  const card = assigned ? getCardById(assigned) : null;
+  const entries = timelineEntries[day.id] || [];
+
+  // Collect all coords from entries for map rendering
+  const routeCoords = [];
+  const transportSegments = [];
+
+  entries.forEach((entry, i) => {
+    if (entry.coords) routeCoords.push(entry.coords);
+    if (entry.transport && i > 0) {
+      const prevEntry = entries[i-1];
+      if (prevEntry && prevEntry.coords && entry.coords) {
+        transportSegments.push({
+          from: prevEntry.coords,
+          to: entry.coords,
+          type: entry.transport,
+          label: entry.activity
+        });
+      }
+    }
+  });
+
+  const foods = day.city === 'bangkok' ? FOOD_DATA.bangkok : FOOD_DATA.phuket;
+  const selectedFood = dayFood[day.id];
+  const selectedFoodObj = foods.find(f => f.id === selectedFood);
 
   const tlEl = document.getElementById('dayTimeline');
   tlEl.innerHTML = `
-    <div class="day-tl-title">${card ? card.icon + ' ' + card.name : ' 当日时间线'}</div>
-    ${!day.hasSlot ? `
-      <div class="day-tl-slots">
-        <div class="day-tl-slot slot-am"><div class="slot-label"> 上午</div>${(tlData.am || '').replace(/&/g,'<br>')}</div>
-        <div class="day-tl-slot slot-pm"><div class="slot-label"> 下午</div>${(tlData.pm || '').replace(/&/g,'<br>')}</div>
-        <div class="day-tl-slot slot-eve"><div class="slot-label"> 晚上</div>${(tlData.eve || '').replace(/&/g,'<br>')}</div>
-      </div>
-    ` : `
-      <div class="day-tl-slots">
-        <div class="day-tl-slot slot-am"><div class="slot-label"> 上午</div>${(tlData.am || '').replace(/&/g,'<br>')}</div>
-        <div class="day-tl-slot slot-pm"><div class="slot-label"> 下午</div>${(tlData.pm || '').replace(/&/g,'<br>')}</div>
-        <div class="day-tl-slot slot-eve"><div class="slot-label"> 晚上</div>${(tlData.eve || '').replace(/&/g,'<br>')}</div>
-      </div>
-    `}
+    <div class="day-tl-title">📋 当日时间线 (可编辑)</div>
+    <div class="tl-entries">
+      ${entries.map((e, i) => `
+        <div class="tl-entry">
+          <div class="tl-time"><input value="${e.time}" onchange="updateEntry('${day.id}',${i},'time',this.value)" style="width:56px;text-align:center;font-weight:600"></div>
+          <div class="tl-dot ${e.transport||''}" title="${i+1}"></div>
+          <div class="tl-content">
+            <input class="tl-act" value="${e.activity}" onchange="updateEntry('${day.id}',${i},'activity',this.value)" placeholder="活动描述">
+            <input class="tl-loc" value="${e.location||''}" onchange="updateEntry('${day.id}',${i},'location',this.value)" placeholder="地点 (可选)">
+            ${e.transport ? `<span class="tl-transport">${transportIcon(e.transport)} ${transportLabel(e.transport)}</span>` : ''}
+          </div>
+          <button class="tl-delete" onclick="deleteEntry('${day.id}',${i})" title="删除">✕</button>
+        </div>
+      `).join('')}
+    </div>
+    <div class="food-row">
+      <span class="food-label">🍽️ 晚餐</span>
+      <select onchange="selectFood('${day.id}', this.value)">
+        <option value="">— 不选 / 自由安排 —</option>
+        ${foods.map(f => `<option value="${f.id}" ${selectedFood===f.id?'selected':''}>${f.name} · ${f.desc} · ${f.price}</option>`).join('')}
+      </select>
+    </div>
+    <div class="tl-add">
+      <button onclick="addEntry('${day.id}')">+ 添加时间段</button>
+    </div>
+    ${selectedFoodObj ? `<div style="margin-top:8px;font-size:0.74rem;color:var(--text-light);padding:6px 10px;background:#FFF8E1;border-radius:8px">📍 ${selectedFoodObj.name} — ${selectedFoodObj.loc} · ${selectedFoodObj.price}</div>` : ''}
   `;
+
+  // Render map
+  initDayMap();
+}
+
+function transportIcon(t) {
+  const map = { walk:'🚶', bts:'🚇', boat:'🛶', ferry:'⛴️', car:'🚐' };
+  return map[t] || '';
+}
+
+function transportLabel(t) {
+  const map = { walk:'步行', bts:'BTS轻轨', boat:'公交船', ferry:'轮渡', car:'包车/Uber' };
+  return map[t] || t;
+}
+
+function updateEntry(dayId, idx, field, value) {
+  if (!timelineEntries[dayId]) return;
+  if (idx < 0 || idx >= timelineEntries[dayId].length) return;
+  timelineEntries[dayId][idx][field] = value;
+}
+
+function deleteEntry(dayId, idx) {
+  if (!timelineEntries[dayId]) return;
+  if (timelineEntries[dayId].length <= 1) return; // Keep at least 1 entry
+  timelineEntries[dayId].splice(idx, 1);
+  renderDayView(currentDayIdx);
+}
+
+function addEntry(dayId) {
+  if (!timelineEntries[dayId]) timelineEntries[dayId] = [];
+  const lastEntry = timelineEntries[dayId][timelineEntries[dayId].length - 1];
+  const newTime = lastEntry ? lastEntry.time : '12:00';
+  timelineEntries[dayId].push({
+    id: dayId + '-' + Date.now(),
+    time: newTime,
+    activity: '新活动',
+    location: '',
+    transport: null,
+    coords: null
+  });
+  renderDayView(currentDayIdx);
+}
+
+function selectFood(dayId, foodId) {
+  dayFood[dayId] = foodId || null;
+  renderDayView(currentDayIdx);
 }
 
 // ==================== MAP ====================
 let _map = null;
 
-const MAP_DATA = {
-  // City base maps
-  bangkok_base: {
-    center: [13.745, 100.53], zoom: 12,
-    markers: [
-      { pos:[13.7370,100.5605], icon:'start', label:'Asok BTS · 酒店', desc:'素坤逸核心区' },
-      { pos:[13.7460,100.4895], icon:'sunset', label:'郑王庙对岸日落点', desc:'Eagle Nest Bar' },
-      { pos:[13.7400,100.5080], icon:'food', label:'唐人街 Yaowarat', desc:'夜市大排档' },
-      { pos:[13.7266,100.5102], icon:'food', label:'ICONSIAM 暹罗天地', desc:'G层水上市场' },
-      { pos:[13.7188,100.5142], icon:'start', label:'Sathorn 码头', desc:'BTS Saphan Taksin' },
-    ]
-  },
-  phuket_base: {
-    center: [7.85, 98.35], zoom: 11,
-    markers: [
-      { pos:[7.820,98.300], icon:'start', label:'卡伦海滩 · 酒店', desc:'Karon Beach' },
-      { pos:[7.884,98.393], icon:'cafe', label:'普吉老镇', desc:'中葡彩色骑楼' },
-      { pos:[7.76,98.305], icon:'sunset', label:'神仙半岛', desc:'Promthep Cape日落' },
-      { pos:[7.78,98.32], icon:'food', label:'悬崖餐厅', desc:'Fine Dining' },
-    ]
-  },
-  // Card-specific routes
-  'bkk-river': {
-    routes: [
-      { coords:[[13.7188,100.5142],[13.7266,100.5102]], color:'#E67E22', dash:null, label:'过河→ICONSIAM' },
-      { coords:[[13.7266,100.5102],[13.7385,100.5025],[13.7437,100.4889],[13.7540,100.4910],[13.7584,100.4883]], color:'#E67E22', dash:null, label:'橙色旗船北上' },
-      { coords:[[13.7584,100.4883],[13.7562,100.4900]], color:'#3498DB', dash:'2,6', label:'跨河轮渡' },
-      { coords:[[13.7562,100.4900],[13.7520,100.4915],[13.7460,100.4895]], color:'#27AE60', dash:'8,6', label:'Citywalk河岸步道' },
-    ],
-    markers: [
-      { pos:[13.7584,100.4883], icon:'market', label:'Wang Lang市场' },
-      { pos:[13.7437,100.4889], icon:'culture', label:'郑王庙 Wat Arun' },
-      { pos:[13.7045,100.4890], icon:'beach', label:'Asiatique河滨夜市' },
-    ],
-    legend: [
-      { type:'solid', color:'#E67E22', label:' 橙色旗船' },
-      { type:'dotted', color:'#3498DB', label:'⛴️ 跨河轮渡' },
-      { type:'dashed', color:'#27AE60', label:' Citywalk' },
-    ]
-  },
-  'bkk-pattaya': {
-    routes: [
-      { coords:[[13.7370,100.5605],[12.9727,100.8880]], color:'#8E44AD', dash:null, label:'曼谷→芭提雅' },
-    ],
-    markers: [
-      { pos:[12.9727,100.8880], icon:'culture', label:'真理寺', desc:'全木海边神殿' },
-      { pos:[12.9380,100.8870], icon:'beach', label:'芭提雅海滩', desc:'海鲜+射击' },
-    ],
-    legend: [
-      { type:'solid', color:'#8E44AD', label:' 包车路线' },
-    ]
-  },
-  'pkt-island': {
-    routes: [
-      { coords:[[7.820,98.300],[7.85,98.32],[8.0,98.38],[8.2,98.45],[8.266,98.500]], color:'#2196A8', dash:null, label:'攀牙湾出海路线' },
-    ],
-    markers: [
-      { pos:[8.266,98.500], icon:'boat', label:'攀牙湾', desc:'海上喀斯特·独木舟·浮潜' },
-    ],
-    legend: [
-      { type:'solid', color:'#2196A8', label:' 出海路线' },
-    ]
-  },
+const MAP_BASE = {
+  bangkok: { center:[13.745,100.53], zoom:12 },
+  phuket: { center:[7.85,98.35], zoom:11 },
 };
 
-const ICON_STYLES = { start:'#2D3436', market:'#E67E22', ferry:'#3498DB', cafe:'#27AE60', culture:'#8E44AD', boat:'#2196A8', sunset:'#E74C3C', food:'#E74C3C', beach:'#2196A8' };
-const ICON_EMOJI = { start:'', market:'', ferry:'⛴️', cafe:'', culture:'️', boat:'', sunset:'', food:'', beach:'️' };
+const ICON_STYLES = { start:'#2D3436', market:'#E67E22', ferry:'#3498DB', cafe:'#27AE60', culture:'#8E44AD', boat:'#2196A8', sunset:'#E74C3C', food:'#E74C3C', beach:'#2196A8', default:'#2D3436' };
+const ICON_EMOJI = { start:'📍', market:'🏪', ferry:'⛴️', cafe:'☕', culture:'🏛️', boat:'⛵', sunset:'🌅', food:'🍽️', beach:'🏖️', default:'📍' };
 
 function makeIcon(type, num) {
-  const c = ICON_STYLES[type] || '#2D3436';
-  const e = ICON_EMOJI[type] || '';
+  const c = ICON_STYLES[type] || ICON_STYLES.default;
+  const e = ICON_EMOJI[type] || ICON_EMOJI.default;
   const html = `<div style="background:${c};color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${num||e}</div>`;
-  return L.divIcon({ html, className:'', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14] });
+  return L.divIcon({html,className:'',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
 }
 
 function smoothCoords(coords, steps) {
@@ -803,175 +997,226 @@ function smoothCoords(coords, steps) {
   if (coords.length === 2) {
     const result = [];
     for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      result.push([coords[0][0] + (coords[1][0]-coords[0][0])*t, coords[0][1] + (coords[1][1]-coords[0][1])*t]);
+      const t = i/steps;
+      result.push([coords[0][0]+(coords[1][0]-coords[0][0])*t, coords[0][1]+(coords[1][1]-coords[0][1])*t]);
     }
     return result;
   }
-  // Catmull-Rom spline
   const result = [];
   for (let s = 0; s < coords.length - 1; s++) {
-    const p0 = coords[Math.max(0, s-1)];
-    const p1 = coords[s];
-    const p2 = coords[s+1];
-    const p3 = coords[Math.min(coords.length-1, s+2)];
+    const p0 = coords[Math.max(0,s-1)], p1=coords[s], p2=coords[s+1], p3=coords[Math.min(coords.length-1,s+2)];
     for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const t2 = t*t, t3 = t2*t;
-      const lat = 0.5 * ((2*p1[0]) + (-p0[0]+p2[0])*t + (2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2 + (-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3);
-      const lng = 0.5 * ((2*p1[1]) + (-p0[1]+p2[1])*t + (2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2 + (-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3);
-      result.push([lat, lng]);
+      const t=i/steps, t2=t*t, t3=t2*t;
+      const lat=0.5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3);
+      const lng=0.5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3);
+      result.push([lat,lng]);
     }
   }
   return result;
 }
 
+const T_COLORS = { walk:'#27AE60', bts:'#3498DB', boat:'#E67E22', ferry:'#2980B9', car:'#8E44AD' };
+const T_DASH = { walk:'8,6', bts:'2,6', boat:null, ferry:'2,8', car:null };
+const T_WIDTH = { walk:3, bts:4, boat:4, ferry:3, car:4 };
+
 function initDayMap() {
   const container = document.getElementById('dayMapContainer');
   if (!_map) {
-    _map = L.map('dayMapContainer').setView([13.745, 100.53], 12);
+    _map = L.map('dayMapContainer').setView([13.745,100.53], 12);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OSM &copy; CARTO',
-      maxZoom: 19
+      attribution:'&copy; OSM &copy; CARTO', maxZoom:19
     }).addTo(_map);
   }
 
-  // Clear previous layers
+  // Clear non-tile layers
   _map.eachLayer(layer => { if (!layer._url) _map.removeLayer(layer); });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OSM &copy; CARTO',
-    maxZoom: 19
-  }).addTo(_map);
 
   const day = DAYS[currentDayIdx];
-  const baseKey = day.city === 'bangkok' ? 'bangkok_base' : 'phuket_base';
-  const base = MAP_DATA[baseKey];
-  const assigned = assignments[day.id];
-  const cardData = assigned ? MAP_DATA[assigned] : null;
+  const entries = timelineEntries[day.id] || [];
+  const base = MAP_BASE[day.city];
 
-  // Render base markers
-  const allMarkers = [...(base?.markers || [])];
-  if (cardData?.markers) allMarkers.push(...cardData.markers);
-
-  allMarkers.forEach((m, i) => {
-    L.marker(m.pos, { icon: makeIcon(m.icon, i+1) })
-      .addTo(_map)
-      .bindPopup(`<strong>${m.label}</strong>${m.desc ? '<br><span style="font-size:0.82rem;color:#636E72">'+m.desc+'</span>' : ''}`);
+  // Render markers
+  let markerNum = 0;
+  entries.forEach(e => {
+    if (e.coords) {
+      markerNum++;
+      let iconType = 'default';
+      if (e.transport === 'boat') iconType = 'boat';
+      else if (e.transport === 'bts') iconType = 'start';
+      else if (e.activity.includes('早餐') || e.activity.includes('午餐') || e.activity.includes('晚餐')) iconType = 'food';
+      else if (e.activity.includes('日落')) iconType = 'sunset';
+      else if (e.activity.includes('咖啡')) iconType = 'cafe';
+      L.marker(e.coords, {icon:makeIcon(iconType, markerNum)})
+        .addTo(_map)
+        .bindPopup(`<strong>${markerNum}. ${e.activity}</strong>${e.location?`<br><span style="font-size:0.78rem;color:#636E72">${e.location}</span>`:''}`);
+    }
   });
 
-  // Render base + card routes
-  const allRoutes = [...(cardData?.routes || [])];
-  allRoutes.forEach(r => {
-    const smoothed = smoothCoords(r.coords);
-    const opts = { color: r.color, weight: r.weight || 4, opacity: 0.85 };
-    if (r.dash) opts.dashArray = r.dash;
-    L.polyline(smoothed, opts).addTo(_map).bindPopup(r.label || '');
-  });
+  // Food marker
+  const foods = day.city === 'bangkok' ? FOOD_DATA.bangkok : FOOD_DATA.phuket;
+  const selectedFood = dayFood[day.id];
+  if (selectedFood) {
+    const sf = foods.find(f => f.id === selectedFood);
+    if (sf) {
+      markerNum++;
+      L.marker(sf.coords, {icon:makeIcon('food', markerNum)})
+        .addTo(_map)
+        .bindPopup(`<strong>🍽️ ${sf.name}</strong><br><span style="font-size:0.78rem">${sf.loc} · ${sf.desc} · ${sf.price}</span>`);
+    }
+  }
+
+  // Render routes with transport styling
+  let legendTypes = new Set();
+  for (let i = 1; i < entries.length; i++) {
+    const prev = entries[i-1];
+    const curr = entries[i];
+    if (prev.coords && curr.coords) {
+      const t = curr.transport || 'walk';
+      legendTypes.add(t);
+      const smoothed = smoothCoords([prev.coords, curr.coords]);
+      L.polyline(smoothed, {
+        color: T_COLORS[t] || '#999',
+        weight: T_WIDTH[t] || 3,
+        dashArray: T_DASH[t] || null,
+        opacity: 0.8
+      }).addTo(_map).bindPopup(`${transportIcon(t)} ${transportLabel(t)}: ${curr.activity}`);
+    }
+  }
 
   // Legend
   const legEl = document.getElementById('dayMapLegend');
-  const legItems = cardData?.legend || [];
-  legEl.innerHTML = legItems.map(l => {
-    let lineStyle = '';
-    if (l.type === 'dashed') lineStyle = `<span class="legend-dash" style="border-color:${l.color}"></span>`;
-    else if (l.type === 'dotted') lineStyle = `<span class="legend-dot-line" style="border-color:${l.color}"></span>`;
-    else lineStyle = `<span class="legend-line" style="background:${l.color}"></span>`;
-    return `<span>${lineStyle} ${l.label}</span>`;
+  legEl.innerHTML = Array.from(legendTypes).map(t => {
+    const isDashed = T_DASH[t];
+    const lineEl = isDashed
+      ? `<span class="l-dash" style="border-color:${T_COLORS[t]}"></span>`
+      : `<span class="l-solid" style="background:${T_COLORS[t]}"></span>`;
+    return `<span>${lineEl} ${transportIcon(t)} ${transportLabel(t)}</span>`;
   }).join('');
 
-  const center = cardData?.center || base?.center || [13.745,100.53];
-  const zoom = cardData?.zoom || base?.zoom || 12;
-  _map.setView(center, zoom);
-  setTimeout(() => _map.invalidateSize(), 100);
+  _map.setView(base.center, base.zoom);
+  setTimeout(() => _map.invalidateSize(), 150);
 }
 
 // ==================== EXPENSE VIEW ====================
+const PAYERS = ['', '冯', '欧', '高', '张'];
+const CATEGORIES = ['机票', '住宿', '餐饮', '活动', '交通', '其他'];
+
+let expenseItems = [
+  { id:'e1', cat:'机票', item:'去程 · 成都→曼谷', perPerson:800, total:null, payer:'冯', note:'8.7 22:00' },
+  { id:'e2', cat:'机票', item:'返程 · 普吉→成都', perPerson:1500, total:null, payer:'高', note:'8.16 14:00' },
+  { id:'e3', cat:'住宿', item:'曼谷 4晚 · 两间房', perPerson:null, total:3000, payer:'冯', note:'Asok BTS附近' },
+  { id:'e4', cat:'住宿', item:'普吉 5晚 · 两间房', perPerson:null, total:4000, payer:'高', note:'卡伦海滩' },
+  { id:'e5', cat:'餐饮', item:'Day 1 晚餐 · 唐人街', perPerson:80, total:null, payer:'张', note:'8.8' },
+  { id:'e6', cat:'餐饮', item:'Day 2 晚餐 · 素坤逸', perPerson:60, total:null, payer:'欧', note:'8.9' },
+  { id:'e7', cat:'餐饮', item:'Day 3 晚餐', perPerson:80, total:null, payer:'张', note:'8.10' },
+  { id:'e8', cat:'餐饮', item:'Day 4 晚餐 · 普吉第一顿', perPerson:120, total:null, payer:'冯', note:'8.11' },
+  { id:'e9', cat:'餐饮', item:'Day 5 晚餐', perPerson:100, total:null, payer:'欧', note:'8.12' },
+  { id:'e10', cat:'餐饮', item:'Day 6 Fine Dining · 悬崖餐厅', perPerson:300, total:null, payer:'高', note:'8.13' },
+  { id:'e11', cat:'餐饮', item:'Day 7 晚餐', perPerson:100, total:null, payer:'张', note:'8.14' },
+  { id:'e12', cat:'餐饮', item:'Day 8 晚餐 · 最后一晚', perPerson:150, total:null, payer:'冯', note:'8.15' },
+  { id:'e13', cat:'活动', item:'跳岛出海一日游', perPerson:400, total:null, payer:'高', note:'攀牙湾' },
+  { id:'e14', cat:'活动', item:'芭提雅包车+射击', perPerson:null, total:1400, payer:'冯', note:'4人分摊 · 人均¥350' },
+  { id:'e15', cat:'活动', item:'其他活动/门票', perPerson:500, total:null, payer:'欧', note:'大象保护/按摩等' },
+  { id:'e16', cat:'交通', item:'市内交通 · 9天', perPerson:300, total:null, payer:'张', note:'BTS/打车/Grab' },
+  { id:'e17', cat:'其他', item:'购物/伴手礼/杂项', perPerson:500, total:null, payer:'', note:'' },
+];
+
 function renderExpenseView() {
-  // Default expense data (per-person or total as the user specified)
-  const expenseRows = [
-    { cat:' 机票', item:'去程 · 成都→曼谷', budget:800, actual:null, note:'8.7 22:00' },
-    { cat:' 机票', item:'返程 · 普吉→成都', budget:1500, actual:null, note:'8.16 14:00' },
-    { cat:' 住宿', item:'曼谷 4晚 · 两间房', budget:3000, actual:null, note:'Asok BTS附近·人均¥750' },
-    { cat:' 住宿', item:'普吉 5晚 · 两间房', budget:4000, actual:null, note:'卡伦海滩·人均¥1000' },
-    { cat:' 餐饮', item:'日常餐饮 · 9天', budget:1800, actual:null, note:'人均¥200/天' },
-    { cat:' 餐饮', item:'Fine Dining × 2顿', budget:600, actual:null, note:'人均¥300×2' },
-    { cat:' 活动', item:'跳岛出海一日游', budget:400, actual:null, note:'攀牙湾' },
-    { cat:' 活动', item:'芭提雅包车+射击', budget:350, actual:null, note:'4人分摊' },
-    { cat:' 活动', item:'其他活动/门票', budget:500, actual:null, note:'大象保护/按摩等' },
-    { cat:' 交通', item:'市内交通 · 9天', budget:300, actual:null, note:'BTS/打车/Grab' },
-    { cat:' 其他', item:'购物/伴手礼/杂项', budget:500, actual:null, note:'' },
-  ];
-
   const PER_PERSON_BUDGET = 8000;
-  let totalBudget = 0, totalActual = 0;
+  let html = '<thead><tr><th>类别</th><th>项目</th><th>人均 ¥</th><th>总体 ¥</th><th>付款人</th><th>备注</th><th></th></tr></thead><tbody>';
 
-  // Group by category
-  let html = '';
   let lastCat = '';
-  expenseRows.forEach((r, i) => {
+  let totalPerPerson = 0;
+  let totalGroup = 0;
+
+  expenseItems.forEach((r, i) => {
     if (r.cat !== lastCat) {
-      html += `<tr><td colspan="6" class="cat-header">${r.cat}</td></tr>`;
+      html += `<tr class="cat-header"><td colspan="7">${r.cat}</td></tr>`;
       lastCat = r.cat;
     }
-    totalBudget += r.budget;
-    html += `
-      <tr>
-        <td>${r.item}</td>
-        <td style="text-align:right">¥${r.budget.toLocaleString()}</td>
-        <td><input type="number" id="exp_${i}" value="${r.actual||''}" placeholder="实际花费" onchange="updateExpenseTotals()"></td>
-        <td style="font-size:0.8rem;color:var(--text-light)">${r.note}</td>
-      </tr>`;
+    const pp = r.perPerson != null ? r.perPerson : (r.total != null ? Math.round(r.total/4) : 0);
+    const tot = r.total != null ? r.total : (r.perPerson != null ? r.perPerson*4 : 0);
+    if (r.perPerson != null) totalPerPerson += r.perPerson;
+    if (r.total != null) totalGroup += r.total;
+    else if (r.perPerson != null) totalGroup += r.perPerson * 4;
+
+    html += `<tr data-exp-id="${r.id}">
+      <td style="font-size:0.72rem">${r.cat}</td>
+      <td style="min-width:140px"><input value="${r.item}" onchange="updateExpItem('${r.id}','item',this.value)" style="width:100%"></td>
+      <td><input type="number" value="${r.perPerson!=null?r.perPerson:''}" placeholder="人均" onchange="onPerPersonChange('${r.id}',this.value)" style="width:80px"></td>
+      <td><input type="number" value="${r.total!=null?r.total:''}" placeholder="总体" onchange="onTotalChange('${r.id}',this.value)" style="width:80px"></td>
+      <td><select onchange="updateExpItem('${r.id}','payer',this.value)">${PAYERS.map(p => `<option value="${p}" ${r.payer===p?'selected':''}>${p||'—'}</option>`).join('')}</select></td>
+      <td style="min-width:100px"><input value="${r.note||''}" onchange="updateExpItem('${r.id}','note',this.value)" style="width:100%"></td>
+      <td><button class="exp-del" onclick="deleteExpItem('${r.id}')">✕</button></td>
+    </tr>`;
   });
 
-  html += `
-    <tr class="total-row"><td> 预算合计</td><td style="text-align:right">¥${totalBudget.toLocaleString()}</td><td></td><td>人均 ¥${Math.round(totalBudget/4).toLocaleString()}</td></tr>
-    <tr class="total-row" id="actualTotalRow"><td> 实际合计</td><td></td><td id="actualTotalCell">-</td><td id="actualPerCell">-</td></tr>
-    <tr class="budget-row"><td> 人均预算</td><td style="text-align:right">¥${PER_PERSON_BUDGET.toLocaleString()}</td><td></td><td id="remainingCell"></td></tr>
-  `;
+  const perRemaining = PER_PERSON_BUDGET - Math.round(totalGroup / 4);
 
-  document.getElementById('expenseTable').innerHTML = `
-    <thead><tr><th>项目</th><th>人均预算</th><th>实际花费</th><th>备注</th></tr></thead>
-    <tbody>${html}</tbody>
-  `;
+  html += `<tr class="total-row"><td colspan="2">📊 合计</td><td>¥${Math.round(totalGroup/4).toLocaleString()}</td><td>¥${totalGroup.toLocaleString()}</td><td></td><td></td><td></td></tr>
+    <tr class="budget-row"><td colspan="2">🎯 人均预算</td><td>¥${PER_PERSON_BUDGET.toLocaleString()}</td><td></td><td></td><td style="color:${perRemaining<0?'var(--must)':'var(--opt)'}">${perRemaining<0?'超支':''} ¥${perRemaining.toLocaleString()} / 人</td><td></td></tr>`;
+  html += '</tbody>';
 
-  updateExpenseTotals();
-}
-
-function updateExpenseTotals() {
-  const inputs = document.querySelectorAll('#expenseTable input');
-  let totalActual = 0;
-  inputs.forEach(inp => {
-    const v = parseFloat(inp.value);
-    if (!isNaN(v)) totalActual += v;
-  });
-
-  const totalBudget = 13750; // Sum of all budget items above
-  const el = document.getElementById('actualTotalCell');
-  const perEl = document.getElementById('actualPerCell');
-  const remEl = document.getElementById('remainingCell');
-
-  if (el) el.textContent = totalActual > 0 ? `¥${totalActual.toLocaleString()}` : '-';
-  if (perEl) perEl.textContent = totalActual > 0 ? `人均 ¥${Math.round(totalActual/4).toLocaleString()}` : '-';
-
-  const perRemaining = 8000 - Math.round(totalActual / 4);
-  if (remEl) {
-    remEl.textContent = totalActual > 0
-      ? `剩余 ¥${perRemaining.toLocaleString()} / 人`
-      : '预算 ¥8,000 / 人';
-    remEl.style.color = perRemaining < 0 ? 'var(--must)' : 'var(--opt)';
-  }
+  document.getElementById('expenseTable').innerHTML = html;
 
   // Budget bar
   const bar = document.getElementById('budgetBar');
   const label = document.getElementById('budgetLabel');
-  if (bar && label) {
-    const pct = totalActual > 0 ? Math.round((totalActual / totalBudget) * 100) : 0;
-    bar.style.width = Math.min(pct, 100) + '%';
-    bar.classList.toggle('over', pct > 100);
-    label.textContent = totalActual > 0
-      ? `已记录花费 ¥${totalActual.toLocaleString()} / 预算 ¥${totalBudget.toLocaleString()} (${pct}%)`
-      : ' 输入实际花费后自动统计';
+  const totalBudget = PER_PERSON_BUDGET * 4;
+  const pct = Math.round((totalGroup / totalBudget) * 100);
+  if (bar) { bar.style.width = Math.min(pct, 100) + '%'; bar.classList.toggle('over', pct > 100); }
+  if (label) label.textContent = `已记录 ¥${totalGroup.toLocaleString()} / 预算 ¥${totalBudget.toLocaleString()} (${pct}%)`;
+}
+
+function onPerPersonChange(id, val) {
+  const v = parseFloat(val);
+  const item = expenseItems.find(e => e.id === id);
+  if (!item) return;
+  if (!isNaN(v) && v > 0) {
+    item.perPerson = v;
+    item.total = null; // Clear total, will auto-calc from per-person
+  } else {
+    item.perPerson = null;
   }
+  renderExpenseView();
+}
+
+function onTotalChange(id, val) {
+  const v = parseFloat(val);
+  const item = expenseItems.find(e => e.id === id);
+  if (!item) return;
+  if (!isNaN(v) && v > 0) {
+    item.total = v;
+    item.perPerson = null; // Clear per-person, will auto-calc from total
+  } else {
+    item.total = null;
+  }
+  renderExpenseView();
+}
+
+function updateExpItem(id, field, value) {
+  const item = expenseItems.find(e => e.id === id);
+  if (!item) return;
+  item[field] = value;
+  renderExpenseView();
+}
+
+function deleteExpItem(id) {
+  expenseItems = expenseItems.filter(e => e.id !== id);
+  renderExpenseView();
+}
+
+function addExpenseEntry() {
+  expenseItems.push({
+    id: 'e' + Date.now(),
+    cat: '餐饮',
+    item: '新条目',
+    perPerson: null,
+    total: null,
+    payer: '',
+    note: ''
+  });
+  renderExpenseView();
 }
 
 // ==================== INIT ====================

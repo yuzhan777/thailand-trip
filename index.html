@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Thailand Trip Planner v1.2.2</title>
+<title>Thailand Trip Planner v1.3</title>
 <style>
 :root {
   --sunny: #E67E22; --rainy: #4A90B8; --bangkok: #E67E22; --phuket: #2196A8;
@@ -282,7 +282,7 @@ body {
 <!-- Hero -->
 <div class="hero">
   <h1>Thailand Trip Planner</h1>
-  <p class="subtitle">抽卡模式 · 看天气出牌 · 半玩半躺 <span style="font-size:0.7rem;opacity:0.6;margin-left:6px;border:1px solid rgba(255,255,255,0.3);border-radius:10px;padding:1px 8px">v1.2.2</span></p>
+  <p class="subtitle">抽卡模式 · 看天气出牌 · 半玩半躺 <span style="font-size:0.7rem;opacity:0.6;margin-left:6px;border:1px solid rgba(255,255,255,0.3);border-radius:10px;padding:1px 8px">v1.3</span></p>
   <div class="dates">
     <span class="date-tag">8.7 晚 成都天府</span>
     <span class="date-tag">曼谷 8.8 - 8.11</span>
@@ -345,7 +345,7 @@ body {
 
 <!-- Footer -->
 <div class="footer">
-  <p>Thailand Trip Planner v1.2.2 · 手机优先 · <span style="opacity:0.6">yuzhan777.github.io/thailand-trip</span></p>
+  <p>Thailand Trip Planner v1.3 · 手机优先 · <span style="opacity:0.6">yuzhan777.github.io/thailand-trip</span></p>
 </div>
 
 <script>
@@ -1310,7 +1310,25 @@ function initDayMap() {
 const PAYERS = ['', '冯波', '欧宝', '大高', '张姐'];
 const CATEGORIES = ['机票', '住宿', '餐饮', '活动', '交通', '其他'];
 
-let expenseItems = [];
+let expenseItems = [
+	  { id:'e1', cat:'机票', item:'去程 · 成都→曼谷', perPerson:800, total:null, payer:'', note:'8.7 22:00' },
+	  { id:'e2', cat:'机票', item:'返程 · 普吉→成都', perPerson:1500, total:null, payer:'', note:'8.16 14:00' },
+	  { id:'e3', cat:'住宿', item:'曼谷 4晚 · 两间房', perPerson:null, total:3000, payer:'', note:'Asok BTS附近' },
+	  { id:'e4', cat:'住宿', item:'普吉 5晚 · 两间房', perPerson:null, total:4000, payer:'', note:'卡伦海滩' },
+	  { id:'e5', cat:'餐饮', item:'Day 1 晚餐 · 唐人街', perPerson:80, total:null, payer:'', note:'8.8' },
+	  { id:'e6', cat:'餐饮', item:'Day 2 晚餐 · 素坤逸', perPerson:60, total:null, payer:'', note:'8.9' },
+	  { id:'e7', cat:'餐饮', item:'Day 3 晚餐', perPerson:80, total:null, payer:'', note:'8.10' },
+	  { id:'e8', cat:'餐饮', item:'Day 4 晚餐 · 普吉第一顿', perPerson:120, total:null, payer:'', note:'8.11' },
+	  { id:'e9', cat:'餐饮', item:'Day 5 晚餐', perPerson:100, total:null, payer:'', note:'8.12' },
+	  { id:'e10', cat:'餐饮', item:'Day 6 Fine Dining · 悬崖餐厅', perPerson:300, total:null, payer:'', note:'8.13' },
+	  { id:'e11', cat:'餐饮', item:'Day 7 晚餐', perPerson:100, total:null, payer:'', note:'8.14' },
+	  { id:'e12', cat:'餐饮', item:'Day 8 晚餐 · 最后一晚', perPerson:150, total:null, payer:'', note:'8.15' },
+	  { id:'e13', cat:'活动', item:'跳岛出海一日游', perPerson:400, total:null, payer:'', note:'攀牙湾' },
+	  { id:'e14', cat:'活动', item:'芭提雅包车+射击', perPerson:null, total:1400, payer:'', note:'4人分摊 · 人均¥350' },
+	  { id:'e15', cat:'活动', item:'其他活动/门票', perPerson:500, total:null, payer:'', note:'大象保护/按摩等' },
+	  { id:'e16', cat:'交通', item:'市内交通 · 9天', perPerson:300, total:null, payer:'', note:'BTS/打车/Grab' },
+	  { id:'e17', cat:'其他', item:'购物/伴手礼/杂项', perPerson:500, total:null, payer:'', note:'' },
+	];
 
 function renderExpenseView() {
   const PER_PERSON_BUDGET = 8000;
@@ -1442,7 +1460,7 @@ function addExpenseEntry() {
 
 // ==================== INIT ====================
 async function init() {
-  if (!localStorage.getItem("th-v1.2.2-clean")) { localStorage.removeItem("thailand-trip-v2"); localStorage.setItem("th-v1.2.2-clean", "1"); }
+  if (!localStorage.getItem("th-v1.3-clean")) { try { const d=JSON.parse(localStorage.getItem("thailand-trip-v2")); if(d){d.expenseItems=null;localStorage.setItem("thailand-trip-v2",JSON.stringify(d));} }catch(e){} localStorage.setItem("th-v1.3-clean","1"); }
   // Hydrate state: localStorage instant → cloud overwrites if newer
   loadLocal();
   const fromCloud = await loadFromCloud();
